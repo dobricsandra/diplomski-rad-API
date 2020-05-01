@@ -2,6 +2,16 @@ const express = require('express');
 const bodyParser = require('body-parser');
 
 const pageRoutes = require('./routes/page');
+const sequelize = require('./config/database');
+const Degree = require('./models/degree');
+const City = require('./models/city');
+const Country = require('./models/country');
+const Faculty = require('./models/faculty');
+const Course = require('./models/course');
+const User = require('./models/user');
+const Instructor = require('./models/instructor');
+const Reservation = require('./models/reservation');
+const Term = require('./models/term');
 
 const app = express();
 
@@ -19,4 +29,49 @@ app.use((req, res, next) => {
 // routes are defined in /routes/page.js file
 app.use(pageRoutes);
 
-app.listen(8080);
+// set foreign key country_id in table city
+City.belongsTo(Country, { foreignKey: { allowNull: false } } );
+Country.hasMany(City); // This is redundant, but let it be
+
+// set foreign key city_id in table faculty
+Faculty.belongsTo(City, { foreignKey: { allowNull: false } });
+City.hasMany(Faculty); // This is redundant, but let it be
+
+// set foreign key faculty_id in table course
+Course.belongsTo(Faculty, { foreignKey: { allowNull: false } });
+Faculty.hasMany(Course);
+
+// set foreign key faculty_id in table user
+User.belongsTo(Faculty, { foreignKey: { allowNull: false } });
+Faculty.hasMany(User);
+
+// set foreign key city_id in table user
+User.belongsTo(City, { foreignKey: { allowNull: false } });
+City.hasMany(User);
+
+// set foreign key user_id in table instructor
+User.hasOne(Instructor, { foreignKey: { allowNull: false } });
+
+// set foreign key degree_id in table instructor
+Instructor.belongsTo(Degree);
+Degree.hasMany(Instructor);
+
+// set foreign keys user_id and course_id in table reservation
+User.hasOne(Reservation, { foreignKey: { allowNull: false } });
+Course.hasOne(Reservation, { foreignKey: { allowNull: false } });
+
+// set foreign key instructor_id in table term
+Term.belongsTo(Instructor, { foreignKey: { allowNull: false } });
+Instructor.hasMany(Term);
+
+// set foreign key reservation_id in table term
+Reservation.hasOne(Term);
+
+// Synchronize models with database. If there is an error, don't start server.
+sequelize.sync() // {force: true} for redefinition
+    .then(result => {
+        console.log("uspjeli");
+        app.listen(8080);
+    })
+    .catch(err => console.log("ne"));
+
