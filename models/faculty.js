@@ -9,10 +9,6 @@ const Faculty = sequelize.define('faculty', {
     allowNull: false,
     primaryKey: true
   },
-  postalCode: {
-    type: Sequelize.INTEGER,
-    allowNull: false,
-  },
   name: {
       type: Sequelize.STRING,
       allowNull: false

@@ -80,7 +80,7 @@ Instructor.belongsToMany(Course, { through: InstructorCourse });
 Course.belongsToMany(Instructor, { through: InstructorCourse });
 
 // Synchronize models with database. If there is an error, don't start server.
-sequelize.sync() // {force: true} for redefinition
+sequelize.sync({ logging: console.log }) // {force: true} for redefinition
     .then(result => {
         console.log("uspjeli");
         app.listen(8080);
