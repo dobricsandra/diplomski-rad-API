@@ -12,6 +12,8 @@ const User = require('./models/user');
 const Instructor = require('./models/instructor');
 const Reservation = require('./models/reservation');
 const Term = require('./models/term');
+const InstructorCourse = require('./models/instructor_course');
+const Review = require('./models/review');
 
 const app = express();
 
@@ -67,11 +69,21 @@ Instructor.hasMany(Term);
 // set foreign key reservation_id in table term
 Reservation.hasOne(Term);
 
+// set foreign key user_id and instructor_id in table review
+Review.belongsTo(User, { foreignKey: { allowNull: false } });
+User.hasMany(Review);
+Review.belongsTo(Instructor, { foreignKey: { allowNull: false } });
+Instructor.hasMany(Review);
+
+// set m:n association between tables instructor and course
+Instructor.belongsToMany(Course, { through: InstructorCourse });
+Course.belongsToMany(Instructor, { through: InstructorCourse });
+
 // Synchronize models with database. If there is an error, don't start server.
 sequelize.sync() // {force: true} for redefinition
     .then(result => {
         console.log("uspjeli");
         app.listen(8080);
     })
-    .catch(err => console.log("ne"));
+    .catch(err => console.log(err));
 

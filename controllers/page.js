@@ -1,21 +1,21 @@
-const Instructor = require('../models/instructor');
+// const Instructor = require('../models/instructor');
 
-exports.postAddInstructor = (req, res, next) => {
-    Instructor.create({
-      id: 1,
-      address: 'Saljska 5',
-      description: 'ja sam instruktor',
-      userId: 1,
+// exports.postAddInstructor = (req, res, next) => {
+//     Instructor.create({
+//       id: 1,
+//       address: 'Saljska 5',
+//       description: 'ja sam instruktor',
+//       userId: 1,
 
-    })
-      .then(result => {
-        // console.log(result);
-        console.log('Created Product');
-      })
-      .catch(err => {
-        console.log(err);
-      });
-  };
+//     })
+//       .then(result => {
+//         // console.log(result);
+//         console.log('Created Product');
+//       })
+//       .catch(err => {
+//         console.log(err);
+//       });
+// };
 
 
 // GET all existing instructors
