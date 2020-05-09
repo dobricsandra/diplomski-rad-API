@@ -17,8 +17,8 @@ const User = sequelize.define('user', {
     type: Sequelize.STRING,
     allowNull: false
   },
-  is_admin: {
-    type: Sequelize.BOOLEAN,
+  isAdmin: {
+    type: Sequelize.INTEGER,
     allowNull: false
   },
   name: {

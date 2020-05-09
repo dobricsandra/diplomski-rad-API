@@ -1,10 +1,11 @@
-const { validationResult} = require('express-validator/check');
+const { validationResult} = require('express-validator');
 
 const Country = require('../models/country');
 const City = require('../models/city');
 
 exports.getAllCountries = (req, res, next) => { 
-    Country.findAll().then(result => {
+    Country.findAll()
+    .then(result => {
       if(Object.keys(result).length == 0){
         res.status(204).json("Ne postoji nijedna država!");
         console.log("Ne postoji nijedna država.");
@@ -13,8 +14,10 @@ exports.getAllCountries = (req, res, next) => {
       console.log(`Evo sve države`);
     })
     .catch(err => {
-      res.status(500).json("Nešto je pošlo po zlu!");
-      console.log(err);
+      const error = new Error(err);
+      error.statusCode = 500;
+      console.log(error);
+      return next(error);
     });
 };
 
@@ -36,37 +39,11 @@ exports.getCountryById = (req, res, next) => {
       res.status(200).json(result);
     })
     .catch(err => {
-      res.status(500).json("Nešto je pošlo po zlu!");
-      console.log(err);
+      const error = new Error(err);
+      error.statusCode = 500;
+      console.log(error);
+      return next(error);
     });  
-};
-
-exports.postGetIdByCountryName = (req, res, next) => { 
-  const errors = validationResult(req);
-  if(!errors.isEmpty()){
-    console.log(errors.array());
-    return res.status(422).json(errors.array()[0].msg);
-  }
-
-  const countryName = req.body.countryName;
-  Country.findAll({  
-    attributes: ['id'],
-    where: {
-      name: countryName
-    }
-  }).then(result => {
-    if(Object.keys(result).length == 0){
-      console.log("Ne postoji takva država");
-      res.status(404).json("Ne postoji država s tim nazivom!");
-      return;
-    }
-    console.log(`Evo ID države s tim imenom`);
-    res.status(200).json(result);
-  })
-  .catch(err => {
-    res.status(500).json("Nešto je pošlo po zlu!");
-    console.log(err);
-  });
 };
 
 exports.getAllCitiesInCountry = (req, res, next) => {
@@ -92,12 +69,12 @@ exports.getAllCitiesInCountry = (req, res, next) => {
     res.status(200).json(result);
     console.log("Popis gradova za navedenu državu:")
   }).catch(err => {
-    res.status(500).json("Nešto je pošlo po zlu!");
-    console.log(err);
+    const error = new Error(err);
+    error.statusCode = 500;
+    console.log(error);
+    return next(error);
   })
 };
-
-
 
 
 // this should be available only for admin to do
@@ -106,7 +83,9 @@ exports.postAddCountry = (req, res, next) => {
   const errors = validationResult(req);
   if(!errors.isEmpty()){
     console.log(errors.array());
-    return res.status(422).json(errors.array()[0].msg);
+    const err = new Error(errors.array()[0].msg);
+    err.statusCode = 422;
+    throw err;
   }
   const name = req.body.name;
   const abbreviation = req.body.abbreviation;
@@ -115,13 +94,16 @@ exports.postAddCountry = (req, res, next) => {
   name: name,
   abbreviation: abbreviation,
   currency: currency
-}).then(result => {
+  })
+  .then(result => {
     res.status(201).json("Dodana nova država!");
-    console.log(`Nova država uspješno dodana!`);
+    console.log(`Nova država uspješno dodana!` + result.id);
   })
   .catch(err => {
-    res.status(500).json("Nešto je pošlo po zlu!");
-    console.log(err);
+    const error = new Error(err);
+    error.statusCode = 500;
+    console.log(error);
+    return next(error);
   });
 };
 
@@ -151,8 +133,10 @@ exports.postEditCountry = (req, res, next) => {
       res.status(200).json(result);
     })
     .catch(err => {
-      res.status(500).json("Nešto je pošlo po zlu!");
-      console.log(err);
+      const error = new Error(err);
+      error.statusCode = 500;
+      console.log(error);
+      return next(error);
     })
 };
 
@@ -172,7 +156,9 @@ exports.deleteCountry = (req, res, next) => {
       res.status(200).json("Uspješno obrisana država!");
     })
     .catch(err => {
-      console.log("Neuspješno brisanje!");
-      res.status(404).json("Neuspješno brisanje!");
+      const error = new Error(err);
+      error.statusCode = 500;
+      console.log(error);
+      return next(error);
     })
 };

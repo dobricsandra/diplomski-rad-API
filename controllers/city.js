@@ -1,61 +1,45 @@
-const Country = require('../models/country');
+const { validationResult } = require('express-validator');
+
 const City = require('../models/city');
 const Faculty = require('../models/faculty');
-const User = require('../models/faculty');
-const Instructor = require('../models/instructor');
 
 exports.getAllCities = (req, res, next) => { 
-    City.findAll().then(result => {
+    City.findAll()
+    .then(result => {
       if(Object.keys(result).length == 0){
         res.status(204).json("Ne postoji nijedan grad!");
         console.log("Ne postoji nijedan grad.");
       }
-      res.status(200).json(result);
-      console.log(`Evo svi gradovi`);
+      console.log("Popis gradova: " + result);
+      res.status(200).json(result); 
     })
     .catch(err => {
-      res.status(500).json("Nešto je pošlo po zlu!");
-      console.log(err);
+      const error = new Error(err);
+      error.statusCode = 500;
+      console.log(error);
+      return next(error);
     });
 };
 
 exports.getCityById = (req, res, next) => { 
     const id = req.params.id;
-    City.findByPk(id).then(result => {
+
+    City.findByPk(id)
+    .then(result => {
       if(result == null){
         console.log("Ne postoji takav grad");
         res.status(404).json("Ne postoji grad s tim ID-jem");
         return;
       }
-      console.log(`Evo gradovi po ID-u`);
+      console.log("Grad je:" + result);
       res.status(200).json(result);
     })
     .catch(err => {
-      res.status(500).json("Nešto je pošlo po zlu!");
-      console.log(err);
+      const error = new Error(err);
+      error.statusCode = 500;
+      console.log(error);
+      return next(error);
     });
-};
-
-exports.postGetIdByCityName = (req, res, next) => { 
-  const cityName = req.body.cityName;
-  City.findAll({  
-    attributes: ['id'],
-    where: {
-      name: cityName
-    }
-  }).then(result => {
-    if(Object.keys(result).length == 0){
-      console.log("Ne postoji takav grad");
-      res.status(404).json("Ne postoji grad s tim nazivom!");
-      return;
-    }
-    console.log(`Evo ID grada s tim imenom`);
-    res.status(200).json(result);
-  })
-  .catch(err => {
-    res.status(500).json("Nešto je pošlo po zlu!");
-    console.log(err);
-  });
 };
 
 exports.getAllFacultiesInCity = (req, res, next) => {
@@ -67,53 +51,40 @@ exports.getAllFacultiesInCity = (req, res, next) => {
     include: [{
       model: Faculty
     }]
-  }).then(result => {
+  })
+  .then(result => {
     if(Object.keys(result).length == 0) {
       res.status(404).json("Ne postoji grad s odabranim ID-jem");
       return;
     }
     res.status(200).json(result);
     console.log("Popis fakulteta za navedeni grad:")
-  }).catch(err => {
-    res.status(500).json("Nešto je pošlo po zlu!");
-    console.log(err);
+  })
+  .catch(err => {
+    const error = new Error(err);
+    error.statusCode = 500;
+    console.log(error);
+    return next(error);;
   })
 };
-
-
-// exports.getAllInstructorsInCity = (req, res, next) => {
-//   id = req.params.id;
-//   City.findAll({
-//     where: {
-//       id: id
-//     },
-//     include: [
-//       { model: User },
-//       { model: Instructor,
-//         through: {attributes: ['user_id']}, 
-//       }
-//     ]
-//   }).then(result => {
-//     if(Object.keys(result).length == 0) {
-//       res.status(404).json("Ne postoji grad s odabranim ID-jem");
-//       return;
-//     }
-//     res.status(200).json(result);
-//     console.log("Popis instruktora za navedeni grad:")
-//   }).catch(err => {
-//     res.status(500).json("Nešto je pošlo po zlu!");
-//     console.log(err);
-//   })
-// };
 
 
 // this should be available only for admin 
 
 exports.postAddCity = (req, res, next) => { 
+  const errors = validationResult(req);
+  if(!errors.isEmpty()){
+      console.log(errors);
+      const error = new Error('Postoji već grad s tim nazivom!');
+      error.statusCode = 422;
+      throw error;
+  }
+
   const postalCode = req.body.postalCode;
   const name = req.body.name;
   const abbreviation = req.body.abbreviation;
   const countryId =  req.body.countryId;
+
   City.create({
     postalCode: postalCode,
     name: name,
@@ -125,12 +96,21 @@ exports.postAddCity = (req, res, next) => {
     console.log(`Novi grad uspješno dodan!`);
   })
   .catch(err => {
-    res.status(500).json("Nešto je pošlo po zlu!");
-    console.log(err);
+    const error = new Error(err);
+    error.status = 500;
+    console.log(error);
+    return next(error);
   });
 };
 
 exports.postEditCity = (req, res, next) => {
+  const errors = validationResult(req);
+  if(!errors.isEmpty()){
+      console.log(errors);
+      const error = new Error('Postoji već grad s tim nazivom!');
+      error.statusCode = 422;
+      throw error;
+  }
   const id = req.params.id;
   const updatedPostalCode = req.body.postalCode;
   const updatedName = req.body.name;
@@ -142,6 +122,7 @@ exports.postEditCity = (req, res, next) => {
         res.status(404).json("Ne postoji grad s odabranim ID-jem");
         return;
       }
+
       result.postalCode = updatedPostalCode;
       result.name = updatedName;
       result.abbreviation = updatedAbbreviation;
@@ -153,12 +134,22 @@ exports.postEditCity = (req, res, next) => {
       res.status(200).json(result);
     })
     .catch(err => {
-      res.status(500).json("Nešto je pošlo po zlu!");
-      console.log(err);
+      const error = new Error(err);
+      error.status = 500;
+      console.log(error);
+      return next(error);
     })
 };
 
 exports.deleteCity = (req, res, next) => {
+  const errors = validationResult(req);
+  if(!errors.isEmpty()){
+      console.log(errors);
+      const error = new Error('Ne možemo obrisati jer postoje korisnici u tom gradu!');
+      error.statusCode = 422;
+      throw error;
+  }
+
   const id = req.body.id;
   City.findByPk(id)
     .then(result => {
@@ -169,7 +160,9 @@ exports.deleteCity = (req, res, next) => {
       res.status(200).json("Uspješno obrisan grad!");
     })
     .catch(err => {
-      console.log("Neuspješno brisanje!");
-      res.status(404).json("Neuspješno brisanje!");
+      const error = new Error(err);
+      error.status = 500;
+      console.log(error);
+      return next(error);
     })
 };

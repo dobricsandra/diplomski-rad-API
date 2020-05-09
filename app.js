@@ -1,8 +1,14 @@
+'use strict';
+
 const express = require('express');
 const bodyParser = require('body-parser');
 
 const pageRoutes = require('./routes/page');
+const authRoutes = require('./routes/auth');
+const adminRoutes = require('./routes/admin');
+
 const sequelize = require('./config/database');
+
 const Degree = require('./models/degree');
 const City = require('./models/city');
 const Country = require('./models/country');
@@ -28,9 +34,17 @@ app.use((req, res, next) => {
     next();
 });
 
-// routes are defined in /routes/page.js file
-app.use(pageRoutes);
+app.use((error, req, res, next) => {
+    console.log(error);
+    res.status(error.httpStatusCode).json(error.message);
+});
 
+// pageRoutes are actions for user, authRoutes for signup and login, and adminRoutes for admin actions
+app.use(pageRoutes);
+app.use(authRoutes);
+app.use('/admin', adminRoutes);
+
+//TODO: should this be here?
 // set foreign key country_id in table city
 City.belongsTo(Country, { foreignKey: { allowNull: false } } );
 Country.hasMany(City); // This is redundant, but let it be
@@ -80,9 +94,9 @@ Instructor.belongsToMany(Course, { through: InstructorCourse });
 Course.belongsToMany(Instructor, { through: InstructorCourse });
 
 // Synchronize models with database. If there is an error, don't start server.
-sequelize.sync({ logging: console.log }) // {force: true} for redefinition
+sequelize.sync() // {force: true} for redefinition { logging: console.log } FOR LOGGING
     .then(result => {
-        console.log("uspjeli");
+        console.log("Spajanje na bazu uspješno, poslužitelj pokrenut!");
         app.listen(8080);
     })
     .catch(err => console.log(err));

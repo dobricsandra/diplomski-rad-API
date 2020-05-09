@@ -105,22 +105,39 @@ exports.getAllUsersOnFaculty = (req, res, next) => {
 // this should be available only for admin 
 
 exports.postAddFaculty = (req, res, next) => { 
+
   const name = req.body.name;
   const abbreviation = req.body.abbreviation;
-  const cityId =  req.body.cityId;
-  Faculty.create({
-    name: name,
-    abbreviation: abbreviation,
-    cityId: cityId
-   })
-  .then(result => {
-    res.status(201).json("Dodan novi fakultet!");
-    console.log(`Novi fakultet uspješno dodan!`);
+  const cityId =  parseInt(req.body.cityId);
+  let city;
+  City.findByPk(cityId).then(result => {
+    if(result == null){
+      console.log("Ne postoji takav fakultet");
+      res.status(404).json("Ne postoji fakultet s tim ID-jem");
+      return;
+    }
+    console.log(`Evo fakulteti po ID-u`);
+    city = result;
+    console.log(city);
+    city.createFaculty({
+        name: name,
+        abbreviation: abbreviation,
+       })
+      .then(result => {
+        res.status(201).json("Dodan novi fakultet!");
+        console.log(`Novi fakultet uspješno dodan!`);
+      })
+      .catch(err => {
+        res.status(500).json("Nešto je pošlo po zlu!");
+        console.log(err);
+      });
+    
   })
   .catch(err => {
     res.status(500).json("Nešto je pošlo po zlu!");
     console.log(err);
   });
+ 
 };
 
 exports.postEditFaculty = (req, res, next) => {
@@ -164,3 +181,4 @@ exports.deleteFaculty = (req, res, next) => {
       res.status(404).json("Neuspješno brisanje!");
     })
 };
+
