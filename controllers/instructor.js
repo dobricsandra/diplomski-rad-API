@@ -164,52 +164,45 @@ exports.postEditInstructor = (req, res, next) => {
 };
 
 exports.deleteInstructor = (req, res, next) => {
-  // const id = req.userId;
-  // let loadedInstructor; 
+  const id = req.userId;
+  let loadedInstructor; 
 
-  // User.findByPk(id)
-  //   .then(result => {
-  //     if(!result) {
-  //       res.status(404).json("Ne postoji korisnik s navedenim ID-jem");
-  //       return;
-  //     }
-  //     return result.getInstructor();
-  //   })
-  //   .then(instructor => {
-  //     if(!instructor) {
-  //       const err = new Error("Ovaj korisnik nije instruktor!");
-  //       err.statusCode = 404;
-  //       throw err;
-  //     }
-  //     loadedInstructor = instructor;
-  //     return loadedInstructor.getTerms();
-  //   })
-  //   .then(terms => {
-  //       if(Object.keys(terms).length != 0) {
-  //       console.log(terms);
-  //       console.log("brišem termine ovog instruktora...");
-  //       return terms.destroy();
-  //     }
-  //   })
-  //   .then(result => {
-  //     return loadedInstructor.getCourses();
-  //   })
-  //   .then(courses => {
-  //     if(Object.keys(courses).length != 0) {
-  //       console.log(courses);
-  //       console.log("brišem predmete ovog instruktora...");
-  //       return courses.destroy( {where: {instructorId: loadedInstructor.id}});;
-  //     }
-  //   })
-  //   .then( result => {
-  //     loadedInstructor.destroy();
-  //     console.log("Obrisan instruktor i svi njegovi termini!");
-  //     res.status(200).json("Uspješno obrisan instruktor i svi njegovi termini i predmeti!");
-  //   })
-  //   .catch(err => {
-  //     const error = new Error(err);
-  //     error.statusCode = 500;
-  //     console.log(error);
-  //     return next(error);
-  //   })
+  User.findByPk(id)
+    .then(result => {
+      if(!result) {
+        res.status(404).json("Ne postoji korisnik s navedenim ID-jem");
+        return;
+      }
+      return result.getInstructor();
+    })
+    .then(instructor => {
+      if(!instructor) {
+        const err = new Error("Ovaj korisnik nije instruktor!");
+        err.statusCode = 404;
+        throw err;
+      }
+      loadedInstructor = instructor;
+      return instructor.getReviews();
+     })
+     .then(reviews => {
+       console.log(reviews);
+       if(reviews){
+         console.log(reviews);
+         reviews.forEach(element => {
+           element.destroy();
+         });
+       }
+     })
+    .then(result => {
+       return loadedInstructor.destroy();
+    })
+    .then(result => {
+      res.status(200).json("Instruktor, predmeti, ocjene i termini su uspješno obrisani!");
+    })
+    .catch(err => {
+      const error = new Error(err);
+      error.statusCode = 500;
+      console.log(error);
+      return next(error);
+    })
 };
