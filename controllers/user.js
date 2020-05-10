@@ -1,144 +1,144 @@
+const { validationResult } = require('express-validator');
+const bcrypt = require('bcryptjs');
+
 const Course = require('../models/course');
 const User = require('../models/user');
 const Instructor = require('../models/instructor');
 const Faculty = require('../models/faculty');
 
 exports.getAllUsers = (req, res, next) => { 
-    User.findAll().then(result => {
-      if(Object.keys(result).length == 0){
-        res.status(204).json("Ne postoji nijedan korisnik!");
-        console.log("Ne postoji nijedan korisnik.");
-      }
-      res.status(200).json(result);
-      console.log(`Evo svi korisnici`);
-    })
-    .catch(err => {
-      res.status(500).json("Nešto je pošlo po zlu!");
-      console.log(err);
-    });
+    User.findAll()
+      .then(result => {
+        if(Object.keys(result).length == 0){
+          res.status(204).json("Ne postoji nijedan korisnik!");
+          console.log("Ne postoji nijedan korisnik.");
+        }
+        res.status(200).json(result);
+        console.log("Uspješno prikupljen popis korisnika.");
+      })
+      .catch(err => {
+        const error = new Error(err);
+        error.statusCode = 500;
+        console.log(error);
+        return next(error);
+      });
 };
 
 exports.getUserById = (req, res, next) => { 
     const id = req.params.id;
     User.findByPk(id).then(result => {
       if(result == null){
-        console.log("Ne postoji takav korisnik");
-        res.status(404).json("Ne postoji korisnik s tim ID-jem");
+        console.log("Ne postoji korisnik s ID-jem " + id);
+        res.status(404).json("Ne postoji korisnik s ID-jem " + id);
         return;
       }
-      console.log(`Evo korisnici po ID-u`);
+      console.log("Uspješno prikupljen popis korisnika.");
       res.status(200).json(result);
     })
     .catch(err => {
-      res.status(500).json("Nešto je pošlo po zlu!");
-      console.log(err);
+        const error = new Error(err);
+        error.statusCode = 500;
+        console.log(error);
+        return next(error);
     });
-};
-
-exports.postGetIdByUsername = (req, res, next) => { 
-  const username = req.body.username;
-  User.findAll({  
-    attributes: ['id'],
-    where: {
-      name: username
-    }
-  }).then(result => {
-    if(Object.keys(result).length == 0){
-      console.log("Ne postoji takav korisnik");
-      res.status(404).json("Ne postoji korisnik s tim nazivom!");
-      return;
-    }
-    console.log(`Evo ID korisnika s tim imenom`);
-    res.status(200).json(result);
-  })
-  .catch(err => {
-    res.status(500).json("Nešto je pošlo po zlu!");
-    console.log(err);
-  });
 };
 
 // this should be available only for admin 
 
-exports.postAddUser = (req, res, next) => { 
-  const email = req.body.email;
-  const password = req.body.password;
-  const name = req.body.name;
-  const surname = req.body.surname;
-  const phoneNumber =  req.body.phoneNumber;
-  const picture =  req.body.picture;
-  const facultyId = req.body.facultyId;
-  const cityId = req.body.cityId;
-  User.create({
-    email: email,
-    password: password,
-    isAdmin: 0,
-    name: name,
-    surname: surname,
-    phoneNumber: phoneNumber,
-    picture: picture,
-    facultyId: facultyId,
-    cityId: cityId
-   })
-  .then(result => {
-    res.status(201).json("Dodan novi korisnik!");
-    console.log(`Novi korisnik uspješno dodan!`);
-  })
-  .catch(err => {
-    res.status(500).json("Nešto je pošlo po zlu!");
-    console.log(err);
-  });
-};
-
 exports.postEditUser = (req, res, next) => {
+  const errors = validationResult(req);
+  if(!errors.isEmpty()){
+    console.log(errors.array());
+    const err = new Error(errors.array()[0].msg);
+    err.statusCode = 422;
+    throw err;
+  }
+
   const id = req.params.id;
+  if(req.userId != id){
+    console.log("Pokušavate urediti tuđi profil!");
+    const err = new Error("Niste autorizirani!");
+    err.statusCode = 401;
+    throw err;
+  }
+  
   const updatedEmail = req.body.email;
   const updatedPassword = req.body.password;
   const updatedIsAdmin = req.body.isAdmin;
   const updatedName = req.body.name;
   const updatedSurname = req.body.surname;
-  const updatedPhoneNumber =  req.body.phoneNumber;
-  const updatedPicture =  req.body.picture;
+  const updatedPhoneNumber = req.body.phoneNumber;
+  const updatedPicture = req.body.picture;
   const updatedFacultyId = req.body.facultyId;
   const updatedCityId = req.body.cityId;
-  Course.findByPk(id)
-    .then(result => {
-      if(Object.keys(result).length == 0) {
-        res.status(404).json("Ne postoji predmet s odabranim ID-jem");
-        return;
-      }
-      email = updatedEmail,
-      password = updatedPassword,
-      isAdmin =  updatedIsAdmin,
-      name = updatedName,
-      surname = updatedSurname,
-      phoneNumber =  updatedPhoneNumber,
-      picture =  updatedPicture,
-      facultyId = updatedFacultyId,
-      cityId = updatedCityId
-      return result.save();
-    })
-    .then(result => {
-      console.log("Korisnik je ažuriran!");
-      res.status(200).json(result);
-    })
-    .catch(err => {
-      res.status(500).json("Nešto je pošlo po zlu!");
-      console.log(err);
-    })
+
+  let updatedUser;
+
+  User.findByPk(id)
+  .then(result => {
+    if(Object.keys(result).length == 0) {
+      res.status(404).json("Ne postoji titula s odabranim ID-jem");
+      return;
+    }
+    updatedUser = result;
+    return result;
+  })
+  .then(result => {
+    return  bcrypt.hash(updatedPassword, 12)}) // TODO: chech what is recommanded value for salt
+  .then(hashedPassword => {
+    return hashedPassword;
+   })
+  .then(hashedPassword => {
+        updatedUser.email = updatedEmail;
+        updatedUser.password = hashedPassword;
+        updatedUser.name = updatedName;
+        updatedUser.surname = updatedSurname;
+        updatedUser.isAdmin = updatedIsAdmin;
+        updatedUser.phoneNumber = updatedPhoneNumber;
+        updatedUser.picture = updatedPicture;
+        updatedUser.facultyId = updatedFacultyId;
+        updatedUser.cityId = updatedCityId;    
+        
+        return updatedUser.save();
+      })
+  .then(result => {
+    console.log("Korisnik je ažuriran!");
+    res.status(200).json(result);
+  })
+  .catch(err => {
+    const error = new Error(err);
+    error.statusCode = 500;
+    console.log(err);
+    return next(error);
+  });   
 };
 
 exports.deleteUser = (req, res, next) => {
-  const id = req.body.id;
+  const id = req.userId // we can change this to req.body.userId if we also want admin to delete users.
+  let loadedUser; 
+
   User.findByPk(id)
     .then(result => {
-      return result.destroy();
+      if(!result) {
+        res.status(404).json("Ne postoji korisnik s navedenim ID-jem");
+        return;
+      }
+      loadedUser = result;
+      return loadedUser.getReservation();
     })
-    .then(result =>{
-      console.log("Obrisan korisnik!");
-      res.status(200).json("Uspješno obrisan korisnik!");
+    .then(reservations => {
+      if(reservations) {
+        console.log("brišem rezervacije ovog korisnika...");
+        reservations.destroy();
+      }
+      loadedUser.destroy();
+      console.log("Obrisan korisnik i sve njegove rezervacije!");
+      res.status(200).json("Uspješno obrisan korisnik i sve njegove rezervacije!");
     })
     .catch(err => {
-      console.log("Neuspješno brisanje!");
-      res.status(404).json("Neuspješno brisanje!");
+      const error = new Error(err);
+      error.statusCode = 500;
+      console.log(error);
+      return next(error);
     })
 };

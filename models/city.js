@@ -19,7 +19,7 @@ const City = sequelize.define('city', {
   },
   abbreviation: {
     type: Sequelize.STRING(5),
-    allowNull: false
+    allowNull: true
   }
 }, 
 {

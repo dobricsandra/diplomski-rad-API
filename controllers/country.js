@@ -5,29 +5,23 @@ const City = require('../models/city');
 
 exports.getAllCountries = (req, res, next) => { 
     Country.findAll()
-    .then(result => {
-      if(Object.keys(result).length == 0){
-        res.status(204).json("Ne postoji nijedna država!");
-        console.log("Ne postoji nijedna država.");
-      }
-      res.status(200).json(result);
-      console.log(`Evo sve države`);
-    })
-    .catch(err => {
-      const error = new Error(err);
-      error.statusCode = 500;
-      console.log(error);
-      return next(error);
-    });
+      .then(result => {
+          if(Object.keys(result).length == 0){
+            res.status(204).json("Ne postoji nijedna država!");
+            console.log("Ne postoji nijedna država.");
+          }
+          res.status(200).json(result);
+          console.log("Države pronađene!");
+      })
+      .catch(err => {
+          const error = new Error(err);
+          error.statusCode = 500;
+          console.log(error);
+          return next(error);
+      });
 };
 
 exports.getCountryById = (req, res, next) => { 
-    const errors = validationResult(req);
-    if(!errors.isEmpty()){
-      console.log(errors.array());
-      return res.status(422).json(errors.array()[0].msg);
-    }
-  
     const id = req.params.id;
     Country.findByPk(id).then(result => {
       if(result == null){
@@ -35,7 +29,7 @@ exports.getCountryById = (req, res, next) => {
         res.status(404).json("Ne postoji država s tim ID-jem");
         return;
       }
-      console.log(`Evo država po ID-u`);
+      console.log("Država s ID-jem " + id + "je " + result.name);
       res.status(200).json(result);
     })
     .catch(err => {
@@ -47,28 +41,21 @@ exports.getCountryById = (req, res, next) => {
 };
 
 exports.getAllCitiesInCountry = (req, res, next) => {
-  const errors = validationResult(req);
-  if(!errors.isEmpty()){
-    console.log(errors.array());
-    return res.status(422).json(errors.array()[0].msg);
-  }
-
   id = req.params.id;
-  Country.findAll({
+  City.findAll({
     where: {
-      id: id
-    },
-    include: [{
-      model: City
-    }]
-  }).then(result => {
+      countryId: id
+    }
+  })
+  .then(result => {
     if(Object.keys(result).length == 0) {
-      res.status(404).json("Ne postoji država s odabranim ID-jem");
+      res.status(404).json("Ne postoji nijedan grad u državi s ID-jem " + id);
       return;
     }
     res.status(200).json(result);
-    console.log("Popis gradova za navedenu državu:")
-  }).catch(err => {
+    console.log("Pronađeni svi gradovi za navedenu državu:");
+  })
+  .catch(err => {
     const error = new Error(err);
     error.statusCode = 500;
     console.log(error);
@@ -77,7 +64,7 @@ exports.getAllCitiesInCountry = (req, res, next) => {
 };
 
 
-// this should be available only for admin to do
+// only for admin
 
 exports.postAddCountry = (req, res, next) => { 
   const errors = validationResult(req);
@@ -87,9 +74,11 @@ exports.postAddCountry = (req, res, next) => {
     err.statusCode = 422;
     throw err;
   }
+
   const name = req.body.name;
   const abbreviation = req.body.abbreviation;
   const currency =  req.body.currency;
+
   Country.create({
   name: name,
   abbreviation: abbreviation,
@@ -97,7 +86,7 @@ exports.postAddCountry = (req, res, next) => {
   })
   .then(result => {
     res.status(201).json("Dodana nova država!");
-    console.log(`Nova država uspješno dodana!` + result.id);
+    console.log("Nova država uspješno dodana: " + result.id);
   })
   .catch(err => {
     const error = new Error(err);
@@ -111,12 +100,16 @@ exports.postEditCountry = (req, res, next) => {
   const errors = validationResult(req);
   if(!errors.isEmpty()){
     console.log(errors.array());
-    return res.status(422).json(errors.array()[0].msg);
+    const err = new Error(errors.array()[0].msg);
+    err.statusCode = 422;
+    throw err;
   }
+
   const id = req.params.id;
   const updatedName = req.body.name;
   const updatedAbbreviation = req.body.abbreviation;
   const updatedCurrency =  req.body.currency;
+
   Country.findByPk(id)
     .then(result => {
       if(Object.keys(result).length == 0) {
@@ -144,14 +137,21 @@ exports.deleteCountry = (req, res, next) => {
   const errors = validationResult(req);
   if(!errors.isEmpty()){
     console.log(errors.array());
-    return res.status(422).json(errors.array()[0].msg);
+    const err = new Error(errors.array()[0].msg);
+    err.statusCode = 422;
+    throw err;
   }
+
   const id = req.body.id;
+
   Country.findByPk(id)
     .then(result => {
+      if(result == null) {
+        res.status(404).json("Država ne postoji!");
+      }
       return result.destroy();
     })
-    .then(result =>{
+    .then(result => {
       console.log("Obrisana država!");
       res.status(200).json("Uspješno obrisana država!");
     })

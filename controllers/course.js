@@ -36,28 +36,6 @@ exports.getCourseById = (req, res, next) => {
     });
 };
 
-exports.postGetIdByCourseName = (req, res, next) => { 
-  const courseName = req.body.courseName;
-  Course.findAll({  
-    attributes: ['id'],
-    where: {
-      name: courseName
-    }
-  }).then(result => {
-    if(Object.keys(result).length == 0){
-      console.log("Ne postoji takav predmet");
-      res.status(404).json("Ne postoji predmet s tim nazivom!");
-      return;
-    }
-    console.log(`Evo ID predmeta s tim imenom`);
-    res.status(200).json(result);
-  })
-  .catch(err => {
-    res.status(500).json("Nešto je pošlo po zlu!");
-    console.log(err);
-  });
-};
-
 exports.addCoursesToInstructor = (req, res, next) => { 
     const userId = req.userId;
     console.log("iz addcourse" +req.userId);

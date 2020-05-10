@@ -1,17 +1,21 @@
+const { validationResult } = require('express-validator');
+
 const Degree = require('../models/degree');
 
 exports.getAllDegrees = (req, res, next) => { 
-    Degrees.findAll().then(result => {
-      if(Object.keys(result).length == 0){
-        res.status(204).json("Ne postoji nijedan stupanj obrazovanja!");
-        console.log("Ne postoji nijedan stupanj obrazovanja.");
+    Degree.findAll().then(result => {
+      if(Object.keys(result).length == 0 || result == null){
+        res.status(204).json("Ne postoji nijedna titula!");
+        console.log("Ne postoji nijedna titula.");
       }
       res.status(200).json(result);
-      console.log(`Evo svi stupnjevi obrazovanja`);
+      console.log("Uspješno prikupljene titule.");
     })
     .catch(err => {
-      res.status(500).json("Nešto je pošlo po zlu!");
-      console.log(err);
+      const error = new Error(err);
+      error.statusCode = 500;
+      console.log(error);
+      return next(error);
     });
 };
 
@@ -19,22 +23,32 @@ exports.getDegreeById = (req, res, next) => {
     const id = req.params.id;
     Degree.findByPk(id).then(result => {
       if(result == null){
-        console.log("Ne postoji takav stupanj obrazovanja");
-        res.status(404).json("Ne postoji stupanj obrazovanja s tim ID-jem");
+        console.log("Ne postoji titula ID-jem " + result.name);
+        res.status(404).json("Ne postoji titula ID-jem " + result.name);
         return;
       }
-      console.log(`Evo stupnjevi obrazovanja po ID-u`);
+      console.log("Uspješno prikupljene titule.");
       res.status(200).json(result);
     })
     .catch(err => {
-      res.status(500).json("Nešto je pošlo po zlu!");
-      console.log(err);
+      const error = new Error(err);
+      error.statusCode = 500;
+      console.log(error);
+      return next(error);
     });
 };
 
 // this should be available only for admin 
 
 exports.postAddDegree = (req, res, next) => { 
+  const errors = validationResult(req);
+  if(!errors.isEmpty()){
+    console.log(errors.array());
+    const err = new Error(errors.array()[0].msg);
+    err.statusCode = 422;
+    throw err;
+  }
+
   const name = req.body.name;
   const abbreviation = req.body.abbreviation;
   Degree.create({
@@ -42,27 +56,37 @@ exports.postAddDegree = (req, res, next) => {
     abbreviation: abbreviation
    })
   .then(result => {
-    res.status(201).json("Dodan novi stupanj obrazovanja!");
-    console.log(`Novi stupanj obrazovanja uspješno dodan!`);
+    res.status(201).json("Dodana nova titula " + result.name);
+    console.log("Dodana nova titula " + result.name);
   })
   .catch(err => {
-    res.status(500).json("Nešto je pošlo po zlu!");
-    console.log(err);
+    const error = new Error(err);
+    error.statusCode = 500;
+    console.log(error);
+    return next(error);
   });
 };
 
 exports.postEditDegree = (req, res, next) => {
+  const errors = validationResult(req);
+  if(!errors.isEmpty()){
+    console.log(errors.array());
+    const err = new Error(errors.array()[0].msg);
+    err.statusCode = 422;
+    throw err;
+  }
+
   const id = req.params.id;
   const updatedName = req.body.name;
   const updatedAbbreviation = req.body.abbreviation;
   Degree.findByPk(id)
     .then(result => {
       if(Object.keys(result).length == 0) {
-        res.status(404).json("Ne postoji stupanj obrazovanja s odabranim ID-jem");
+        res.status(404).json("Ne postoji titula s odabranim ID-jem");
         return;
       }
-      name = updatedName;
-      abbreviation = updatedAbbreviation;
+      result.name = updatedName;
+      result.abbreviation = updatedAbbreviation;
       return result.save();
     })
     .then(result => {
@@ -70,15 +94,28 @@ exports.postEditDegree = (req, res, next) => {
       res.status(200).json(result);
     })
     .catch(err => {
-      res.status(500).json("Nešto je pošlo po zlu!");
-      console.log(err);
+      const error = new Error(err);
+      error.statusCode = 500;
+      console.log(error);
+      return next(error);
     })
 };
 
 exports.deleteDegree = (req, res, next) => {
+  const errors = validationResult(req);
+  if(!errors.isEmpty()){
+    console.log(errors.array());
+    const err = new Error(errors.array()[0].msg);
+    err.statusCode = 422;
+    throw err;
+  }
+
   const id = req.body.id;
   Degree.findByPk(id)
     .then(result => {
+      if(result == null) {
+        res.status(404).json("Titula ne postoji!");
+      }
       return result.destroy();
     })
     .then(result =>{
@@ -86,7 +123,9 @@ exports.deleteDegree = (req, res, next) => {
       res.status(200).json("Uspješno obrisan stupanj obrazovanja!");
     })
     .catch(err => {
-      console.log("Neuspješno brisanje!");
-      res.status(404).json("Neuspješno brisanje!");
+      const error = new Error(err);
+      error.statusCode = 500;
+      console.log(error);
+      return next(error);
     })
 };

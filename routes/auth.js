@@ -17,7 +17,7 @@ router.post('/signup', [
                     return Promise.reject("Postoji već korisnik s tim mailom! Molimo Vas, upišite novi mail");
                 }
             });
-        }).withMessage('Postoji već korisnik s tim mailom! Molimo Vas, upišite novi mail'),
+        }),
     body('password')
         .isLength( { min: 6 } ).withMessage('Lozinka mora imati najmanje 6 znakova!'),
     body('phoneNumber')

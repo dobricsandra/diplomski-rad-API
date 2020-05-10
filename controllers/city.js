@@ -1,7 +1,10 @@
 const { validationResult } = require('express-validator');
 
 const City = require('../models/city');
+const Country = require('../models/country');
 const Faculty = require('../models/faculty');
+const User = require('../models/user');
+const Instructor = require('../models/instructor');
 
 exports.getAllCities = (req, res, next) => { 
     City.findAll()
@@ -44,13 +47,11 @@ exports.getCityById = (req, res, next) => {
 
 exports.getAllFacultiesInCity = (req, res, next) => {
   id = req.params.id;
-  City.findAll({
+
+  Faculty.findAll({
     where: {
-      id: id
-    },
-    include: [{
-      model: Faculty
-    }]
+      cityId: id
+    }
   })
   .then(result => {
     if(Object.keys(result).length == 0) {
@@ -68,16 +69,38 @@ exports.getAllFacultiesInCity = (req, res, next) => {
   })
 };
 
+exports.getAllUsersInCity = (req, res, next) => {
+  id = req.params.id;
+  User.findAll({
+    where: {
+      cityId: id
+    }
+  })
+  .then(result => {
+    if(Object.keys(result).length == 0) {
+      res.status(404).json("Ne postoji grad s odabranim ID-jem");
+      return;
+    }
+    res.status(200).json(result);
+    console.log("Popis korisnika za navedeni grad:")
+  })
+  .catch(err => {
+    const error = new Error(err);
+    error.statusCode = 500;
+    console.log(error);
+    return next(error);;
+  })
+};
 
 // this should be available only for admin 
 
 exports.postAddCity = (req, res, next) => { 
   const errors = validationResult(req);
   if(!errors.isEmpty()){
-      console.log(errors);
-      const error = new Error('Postoji već grad s tim nazivom!');
-      error.statusCode = 422;
-      throw error;
+    console.log(errors.array());
+    const err = new Error(errors.array()[0].msg);
+    err.statusCode = 422;
+    throw err;
   }
 
   const postalCode = req.body.postalCode;
@@ -85,31 +108,34 @@ exports.postAddCity = (req, res, next) => {
   const abbreviation = req.body.abbreviation;
   const countryId =  req.body.countryId;
 
-  City.create({
-    postalCode: postalCode,
-    name: name,
-    abbreviation: abbreviation,
-    countryId: countryId
-   })
-  .then(result => {
-    res.status(201).json("Dodan novi grad!");
-    console.log(`Novi grad uspješno dodan!`);
-  })
-  .catch(err => {
-    const error = new Error(err);
-    error.status = 500;
-    console.log(error);
-    return next(error);
-  });
+  Country
+    .findOne( { where: { id: countryId} } )
+      .then(country => {
+          return country.createCity({
+                  postalCode: postalCode,
+                  name: name,
+                  abbreviation: abbreviation,
+                  });
+      })
+      .then(result => {
+        res.status(201).json("Dodan novi grad: " + result.name);
+        console.log(`Novi grad uspješno dodan!`);
+      })
+      .catch(err => {
+        const error = new Error(err);
+        error.status = 500;
+        console.log(error);
+        return next(error);
+      });
 };
 
 exports.postEditCity = (req, res, next) => {
   const errors = validationResult(req);
   if(!errors.isEmpty()){
-      console.log(errors);
-      const error = new Error('Postoji već grad s tim nazivom!');
-      error.statusCode = 422;
-      throw error;
+    console.log(errors.array());
+    const err = new Error(errors.array()[0].msg);
+    err.statusCode = 422;
+    throw err;
   }
   const id = req.params.id;
   const updatedPostalCode = req.body.postalCode;
@@ -144,18 +170,21 @@ exports.postEditCity = (req, res, next) => {
 exports.deleteCity = (req, res, next) => {
   const errors = validationResult(req);
   if(!errors.isEmpty()){
-      console.log(errors);
-      const error = new Error('Ne možemo obrisati jer postoje korisnici u tom gradu!');
-      error.statusCode = 422;
-      throw error;
+    console.log(errors.array());
+    const err = new Error(errors.array()[0].msg);
+    err.statusCode = 422;
+    throw err;
   }
 
   const id = req.body.id;
   City.findByPk(id)
     .then(result => {
+      if(result == null) {
+        res.status(404).json("Grad ne postoji!");
+      }
       return result.destroy();
     })
-    .then(result =>{
+    .then(result => {
       console.log("Obrisan grad!");
       res.status(200).json("Uspješno obrisan grad!");
     })

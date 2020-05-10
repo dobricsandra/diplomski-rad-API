@@ -6,6 +6,7 @@ const bodyParser = require('body-parser');
 const pageRoutes = require('./routes/page');
 const authRoutes = require('./routes/auth');
 const adminRoutes = require('./routes/admin');
+const userRoutes = require('./routes/user');
 
 const sequelize = require('./config/database');
 
@@ -42,6 +43,7 @@ app.use((error, req, res, next) => {
 // pageRoutes are actions for user, authRoutes for signup and login, and adminRoutes for admin actions
 app.use(pageRoutes);
 app.use(authRoutes);
+app.use(userRoutes);
 app.use('/admin', adminRoutes);
 
 //TODO: should this be here?
@@ -66,7 +68,8 @@ User.belongsTo(City, { foreignKey: { allowNull: false } });
 City.hasMany(User);
 
 // set foreign key user_id in table instructor
-User.hasOne(Instructor, { foreignKey: { allowNull: false } });
+User.hasOne(Instructor, { foreignKey: { allowNull: false } } );
+Instructor.belongsTo(User);
 
 // set foreign key degree_id in table instructor
 Instructor.belongsTo(Degree);
@@ -94,7 +97,7 @@ Instructor.belongsToMany(Course, { through: InstructorCourse });
 Course.belongsToMany(Instructor, { through: InstructorCourse });
 
 // Synchronize models with database. If there is an error, don't start server.
-sequelize.sync() // {force: true} for redefinition { logging: console.log } FOR LOGGING
+sequelize.sync() // {force: true} for redefinition { logging: console.log } for logging
     .then(result => {
         console.log("Spajanje na bazu uspješno, poslužitelj pokrenut!");
         app.listen(8080);

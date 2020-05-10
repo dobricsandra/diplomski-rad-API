@@ -1,9 +1,8 @@
 const express = require('express');
-const { body, param } = require('express-validator/check');
+//const { body, param } = require('express-validator/check');
 
 const isAuth = require('../middleware/is-auth');
 
-const pageController = require('../controllers/page');
 const countryController = require('../controllers/country');
 const cityController = require('../controllers/city');
 const facultyController = require('../controllers/faculty');
@@ -15,16 +14,26 @@ const reviewController = require('../controllers/review');
 
 const router = express.Router();
 
-
-router.post('/ej', isAuth, courseController.addCoursesToInstructor);
 router.get('/country', countryController.getAllCountries);
-router.get('/country/:id', param('id', 'ID mora biti cijeli broj!'), countryController.getCountryById);
-router.get('/citiesInCountry/:id', countryController.getAllCitiesInCountry);
-
+router.get('/country/:id', countryController.getCountryById);
+router.get('/country/:id/cities', countryController.getAllCitiesInCountry);
 
 router.get('/city', cityController.getAllCities);
 router.get('/city/:id', cityController.getCityById);
-router.get('/facultiesInCity/:id', cityController.getAllFacultiesInCity);
+router.get('/city/:id/faculties', cityController.getAllFacultiesInCity);
+router.get('/city/:id/users', cityController.getAllUsersInCity);
+
+router.get('/degree', degreeController.getAllDegrees);
+router.get('/degree/:id', degreeController.getDegreeById);
+
+router.get('/user', userController.getAllUsers);
+router.get('/user/:id', userController.getUserById);
+
+router.post('/ej', isAuth, courseController.addCoursesToInstructor);
+
+
+
+
 
 
 router.get('/faculty', facultyController.getAllFaculties);
@@ -38,13 +47,10 @@ router.post('/facultyId', facultyController.postGetIdByFacultyName);
 router.get('/course', courseController.getAllCourses);
 router.get('/course/:id', courseController.getCourseById);
 router.get('/instructorsForCourse/:id', courseController.getAllInstructorsForCourse);
-router.post('/courseId', courseController.postGetIdByCourseName);
 
 
 
-router.get('/user', userController.getAllUsers);
-router.get('/user/:id', userController.getUserById);
-router.post('/userId', userController.postGetIdByUsername);
+
 
 
 router.get('/instructor', instructorController.getAllInstructors);
@@ -52,8 +58,6 @@ router.get('/instructor/:id', instructorController.getInstructorById);
 
 
 
-router.get('/degree', degreeController.getAllDegrees);
-router.get('/degree/:id', degreeController.getDegreeById);
 
 
 router.post('/review/:id', isAuth, reviewController.postAddReview);

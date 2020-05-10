@@ -68,12 +68,8 @@ exports.login = (req, res, next) => {
 
     let validUser;
 
-    bcrypt.hash(password, 12)
-        .then( hashedPassword => {
-            return User.findOne( {where: { email: email } } );
-        })
+    User.findOne( {where: { email: email } } )
         .then(user => {
-            //console.log(user);
             if(!user){
                 const error = new Error('Pogrešna e-mail adresa ili lozinka!');
                 error.statusCode = 401;

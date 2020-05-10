@@ -35,29 +35,7 @@ exports.getFacultyById = (req, res, next) => {
     });
 };
 
-exports.postGetIdByFacultyName = (req, res, next) => { 
-  const facultyName = req.body.facultyName;
-  Faculty.findAll({  
-    attributes: ['id'],
-    where: {
-      name: facultyName
-    }
-  }).then(result => {
-    if(Object.keys(result).length == 0){
-      console.log("Ne postoji takav fakultet");
-      res.status(404).json("Ne postoji fakultet s tim nazivom!");
-      return;
-    }
-    console.log(`Evo ID fakulteta s tim imenom`);
-    res.status(200).json(result);
-  })
-  .catch(err => {
-    res.status(500).json("Nešto je pošlo po zlu!");
-    console.log(err);
-  });
-};
-
-exports.getAllUsersOnFaculty = (req, res, next) => {
+exports.getAllInstructorsOnFaculty = (req, res, next) => {
   id = req.params.id;
   Faculty.findAll({
     where: {
