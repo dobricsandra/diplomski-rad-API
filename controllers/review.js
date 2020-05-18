@@ -4,7 +4,7 @@ const Instructor = require('../models/instructor');
 exports.getAllReviewsForInstructor = (req, res, next) => { 
     const id = req.params.id;
     Review.findAll( {where: { 'instructor_id' : id }}).then(result => {
-      if(result == null){
+      if(Object.keys(result) == 0){
         console.log("Ne postoji ocjena za instruktora");
         res.status(404).json("Ne postoji ocjena za instruktora s tim ID-jem");
         return;

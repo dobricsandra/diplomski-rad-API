@@ -101,7 +101,7 @@ Course.belongsToMany(Instructor, { through: InstructorCourse });
 sequelize.sync() // {force: true} for redefinition { logging: console.log } for logging
     .then(result => {
         console.log("Spajanje na bazu uspješno, poslužitelj pokrenut!");
-        app.listen(8080);
+        app.listen(3000);
     })
     .catch(err => console.log(err));
 

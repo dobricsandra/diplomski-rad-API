@@ -9,6 +9,7 @@ const Degree = require('../models/degree');
 
 const userController = require('../controllers/user');
 const instructorController = require('../controllers/instructor');
+const reviewController = require('../controllers/review');
 
 
 const router = express.Router();
@@ -74,5 +75,7 @@ router.post('/instructor/:id', isAuth, [
 ], instructorController.postEditInstructor);
 
 router.delete('/instructor', isAuth, instructorController.deleteInstructor);
+
+router.get('/review/:id', reviewController.getAllReviewsForInstructor);
 
 module.exports = router;

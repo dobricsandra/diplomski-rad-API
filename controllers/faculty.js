@@ -2,6 +2,8 @@ const City = require('../models/city');
 const Faculty = require('../models/faculty');
 const User = require('../models/faculty');
 const Instructor = require('../models/instructor');
+const Course = require('../models/course');
+
 
 exports.getAllFaculties = (req, res, next) => { 
     Faculty.findAll().then(result => {
@@ -59,14 +61,11 @@ exports.getAllInstructorsOnFaculty = (req, res, next) => {
 
 
   exports.getAllCoursesOnFaculty = (req, res, next) => {
-    id = req.params.id;
-    Faculty.findAll({
+    facultyId = req.params.id;
+    Course.findAll({   
       where: {
-        id: id
-      },
-      include: [{
-        model: Course
-      }]
+        facultyId: facultyId
+      }
     }).then(result => {
       if(Object.keys(result).length == 0) {
         res.status(404).json("Ne postoji fakultet s odabranim ID-jem");
