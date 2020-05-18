@@ -74,6 +74,8 @@ router.post('/instructor/:id', isAuth, [
         })
 ], instructorController.postEditInstructor);
 
+router.get('/userDetails/:id', userController.getUserByIdDetails);
+
 router.delete('/instructor', isAuth, instructorController.deleteInstructor);
 
 router.get('/review/:id', reviewController.getAllReviewsForInstructor);
