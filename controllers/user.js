@@ -97,12 +97,12 @@ exports.postEditUser = (req, res, next) => {
   }
 
   const updatedEmail = req.body.email;
-  const updatedPassword = req.body.password;
-  const updatedIsAdmin = req.body.isAdmin;
+  //const updatedPassword = req.body.password;
+  //const updatedIsAdmin = req.body.isAdmin;
   const updatedName = req.body.name;
   const updatedSurname = req.body.surname;
   const updatedPhoneNumber = req.body.phoneNumber;
-  const updatedPicture = req.body.picture;
+  //const updatedPicture = req.body.picture;
   const updatedFacultyId = req.body.facultyId;
   const updatedCityId = req.body.cityId;
 
@@ -115,22 +115,22 @@ exports.postEditUser = (req, res, next) => {
         return;
       }
       updatedUser = result;
-      return result;
-    })
-    .then(result => {
-      return bcrypt.hash(updatedPassword, 12)
-    }) // TODO: chech what is recommanded value for salt
-    .then(hashedPassword => {
-      return hashedPassword;
-    })
-    .then(hashedPassword => {
+    //   return result;
+    // })
+    // .then(result => {
+    // //   return bcrypt.hash(updatedPassword, 12)
+    // // }) // TODO: chech what is recommanded value for salt
+    // // .then(hashedPassword => {
+    // //   return hashedPassword;
+    // // })
+    // // .then(hashedPassword => {
       updatedUser.email = updatedEmail;
-      updatedUser.password = hashedPassword;
+      //updatedUser.password = hashedPassword;
       updatedUser.name = updatedName;
       updatedUser.surname = updatedSurname;
-      updatedUser.isAdmin = updatedIsAdmin;
+      //updatedUser.isAdmin = updatedIsAdmin;
       updatedUser.phoneNumber = updatedPhoneNumber;
-      updatedUser.picture = updatedPicture;
+      //updatedUser.picture = updatedPicture;
       updatedUser.facultyId = updatedFacultyId;
       updatedUser.cityId = updatedCityId;
 
@@ -176,4 +176,22 @@ exports.deleteUser = (req, res, next) => {
       console.log(error);
       return next(error);
     })
+};
+
+exports.getUserInstructorId = (req, res, next) => {
+      const userId = req.userId;
+      Instructor.findOne({where: {userId: userId}})
+        .then(result => {
+          console.log(result);
+          if(!result) {
+            res.status(404).json({instructorId: null})
+          }
+          res.status(200).json({instructorId: result.id});
+        })
+        .catch(err => {
+          const error = new Error(err);
+          error.statusCode = 500;
+          console.log(error);
+          return next(error);
+        })
 };

@@ -6,10 +6,14 @@ const isAuth = require('../middleware/is-auth');
 const User = require('../models/user');
 const Instructor = require('../models/instructor');
 const Degree = require('../models/degree');
+const Term = require('../models/degree');
 
 const userController = require('../controllers/user');
 const instructorController = require('../controllers/instructor');
 const reviewController = require('../controllers/review');
+const termController = require('../controllers/term');
+
+const reservationController = require('../controllers/reservation');
 
 
 const router = express.Router();
@@ -18,8 +22,8 @@ router.post('/user/:id', isAuth, [
     body('email')
         .isEmail().withMessage('Unesite ispravan mail!')
         .isLength( { min: 5 } ).withMessage('E-mail adresa je prekratka!'),
-    body('password')
-        .isLength( { min: 6 } ).withMessage('Lozinka mora imati najmanje 6 znakova!'),
+    // body('password')
+    //     .isLength( { min: 6 } ).withMessage('Lozinka mora imati najmanje 6 znakova!'),
     body('phoneNumber')
         .isMobilePhone().withMessage('Unijeli ste neispravan broj mobitela!'),
     body('name')
@@ -78,6 +82,16 @@ router.get('/userDetails/:id', userController.getUserByIdDetails);
 
 router.delete('/instructor', isAuth, instructorController.deleteInstructor);
 
+router.post('/reservation', isAuth, reservationController.postAddReservation);
+router.post('/reserveTerm/:id', isAuth, reservationController.postReserveTerm);
+router.get('/reservations', isAuth, reservationController.getReservationsForCurrentUser);
+router.get('/term/:id', isAuth, termController.getAllTermsForInstructor);
+router.post('/term', isAuth, termController.setNewTerm);
+router.delete('/term', isAuth, termController.deleteExistingTerm);
+
 router.get('/review/:id', reviewController.getAllReviewsForInstructor);
+router.get('/isUserInstructor', isAuth, userController.getUserInstructorId);
+router.post('/changePrice', isAuth, instructorController.changePrice);
+router.post('/deleteCourse', isAuth, instructorController.deleteCourse);
 
 module.exports = router;

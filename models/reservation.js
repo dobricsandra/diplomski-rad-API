@@ -13,15 +13,11 @@ const Reservation = sequelize.define('reservation', {
     type: Sequelize.STRING,
     allowNull: false
   },
-  reservedAt: {
-    type: Sequelize.DATE,
-    allowNull: false
-  },
   isCancelledByUser: {
-    type: Sequelize.BOOLEAN
+    type: Sequelize.INTEGER
   },
-  isCancelledByUser: {
-    type: Sequelize.BOOLEAN
+  isCancelledByInstructor: {
+    type: Sequelize.INTEGER
   },
 },
 {

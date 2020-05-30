@@ -209,7 +209,7 @@ router.post('/faculty/:id', isAuth, isAdmin, [
 router.delete('/faculty', isAuth, isAdmin, [
     body('id')
     .custom( (value, {req} ) => {
-        return User.findOne({facultyId: value}).then( user => {
+        return User.findOne({where: {facultyId: value} }).then( user => {
             if(!user){
                 return Promise.reject('Ne možete obrisati ovaj fakultet jer postoje korisnici na njemu!');
             }

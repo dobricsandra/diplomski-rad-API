@@ -42,7 +42,7 @@ exports.signup = (req, res, next) => {
                     })
         })
         .then(result => {
-            res.status(201).json("Dodan novi korisnik: " + result.name + " " + result.surname);
+            res.status(201).json(result);
             console.log("Novi korisnik uspješno dodan: " + result.name + " " + result.surname);
         })
         .catch(err => {
@@ -90,9 +90,9 @@ exports.login = (req, res, next) => {
                 userId: validUser.id,
                 isAdmin: validUser.isAdmin
             }, 'secret', { expiresIn: '1h' }); //TODO secret needs to be longer, fix it 
-    
+        
             console.log("Korisniku je dodijeljen JWT: " + token); 
-            res.status(200).json({token: token, userId: validUser.id.toString(), isAdmin: validUser.isAdmin});
+            res.status(200).json({token: token, userId: validUser.id.toString(), expiresIn: '3600', isAdmin: validUser.isAdmin});
         })
         .catch(err => {
             const error = new Error(err);

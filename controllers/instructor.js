@@ -4,6 +4,11 @@ const Course = require('../models/course');
 const User = require('../models/user');
 const Instructor = require('../models/instructor');
 const Faculty = require('../models/faculty');
+const Degree = require('../models/degree');
+const City = require('../models/city');
+const Review = require('../models/review');
+const Term = require('../models/term');
+const InstructorCourse = require('../models/instructor_course');
 
 exports.getAllInstructors = (req, res, next) => { 
     Instructor.findAll({ 
@@ -33,14 +38,29 @@ exports.getAllInstructors = (req, res, next) => {
 
 exports.getInstructorById = (req, res, next) => { 
     const id = req.params.id;
+    console.log(id);
     Instructor.findByPk(id, { 
       include: [ 
         { 
-          model: User, 
-        }, 
+          model: User, include: [
+            { 
+              model: City
+            },
+            {
+              model: Faculty
+            }
+          ]},
+         
         { 
-          model: Course,
-        } 
+          model: Course, include: [ { model: Faculty}]
+        },
+        {
+          model: Degree
+        },
+        {
+          model: Review
+        },
+        {model: Term}
       ]
       })
       .then(result => {
@@ -59,7 +79,6 @@ exports.getInstructorById = (req, res, next) => {
         return next(error);
       });
 };
-
 
 
 exports.postAddInstructor = (req, res, next) => { 
@@ -205,4 +224,44 @@ exports.deleteInstructor = (req, res, next) => {
       console.log(error);
       return next(error);
     })
+};
+
+exports.changePrice = (req, res, next) => {
+  const instructorId = req.body.instructorId;
+  const courseId = req.body.courseId;
+  const updatedPrice = req.body.price;
+
+  InstructorCourse.findOne({where: {instructorId: instructorId, courseId: courseId}})
+  .then(result => {
+    result.price = updatedPrice;
+    return result.save();
+  })
+  .then(result => {
+    res.status(200).json(result);
+  })
+  .catch(err => {
+    const error = new Error(err);
+    error.statusCode = 500;
+    console.log(error);
+    return next(error);
+  })
+};
+
+exports.deleteCourse = (req, res, next) => {
+  const instructorId = req.body.instructorId;
+  const courseId = req.body.courseId;
+
+  InstructorCourse.findOne({where: {instructorId: instructorId, courseId: courseId}})
+  .then(result => {
+    return result.destroy();
+  })
+  .then(result => {
+    res.status(200).json(result);
+  })
+  .catch(err => {
+    const error = new Error(err);
+    error.statusCode = 500;
+    console.log(error);
+    return next(error);
+  })
 };

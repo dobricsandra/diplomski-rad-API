@@ -10,7 +10,7 @@ const Term = sequelize.define('term', {
     primaryKey: true
   },
   startTime: {
-    type: Sequelize.BIGINT,
+    type: Sequelize.STRING(10),
     allowNull: false
   }
 },

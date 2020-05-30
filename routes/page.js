@@ -31,11 +31,6 @@ router.get('/user/:id', userController.getUserById);
 
 router.post('/ej', isAuth, courseController.addCoursesToInstructor);
 
-
-
-
-
-
 router.get('/faculty', facultyController.getAllFaculties);
 router.get('/faculty/:id', facultyController.getFacultyById);
 router.get('/coursesOnFaculty/:id', facultyController.getAllCoursesOnFaculty);
