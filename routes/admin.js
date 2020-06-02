@@ -21,7 +21,7 @@ const degreeController = require('../controllers/degree');
 const router = express.Router();
 
 // country create, update, delete operations
-router.post('/country', isAuth, isAdmin, [
+router.post('/countries', isAuth, isAdmin, [
     body('name')
         .not().isEmpty().withMessage('Naziv države ne može biti prazan!')
         .isLength( { min: 3 } ).withMessage('Naziv države ne može biti kraći od 3 znaka!')
@@ -41,17 +41,10 @@ router.post('/country', isAuth, isAdmin, [
 
 ], countryController.postAddCountry);
 
-router.post('/country/:id',  isAuth, isAdmin, [
+router.post('/countries/:id',  isAuth, isAdmin, [
     body('name')
         .not().isEmpty().withMessage('Naziv države ne može biti prazan!')
         .isLength( { min:3 } ).withMessage('Naziv države ne može biti kraći od 3 znaka!'),
-        // .custom( (value, {req} ) => {
-        //     return Country.findOne( { where: { name: value } } ).then( country => {
-        //         if(country){
-        //             return Promise.reject('Država s tim nazivom već postoji!');
-        //         }
-        //     }).catch();
-        // }),
     body('abbreviation')
         .not().isEmpty().withMessage('Kratica naziva države ne može biti prazna!')
         .isLength( {max: 10 } ).withMessage('Kratica naziva države ne može biti dulja od 10 znakova!'),
@@ -61,7 +54,7 @@ router.post('/country/:id',  isAuth, isAdmin, [
 
 ], countryController.postEditCountry);
 
-router.delete('/country', isAuth, isAdmin, [
+router.delete('/countries', isAuth, isAdmin, [
     body('id')
     .custom( (value, {req} ) => {
         return City.findOne( { where: { countryId: value } } ).then( city => {
@@ -73,7 +66,7 @@ router.delete('/country', isAuth, isAdmin, [
 ], countryController.deleteCountry);
 
 // city create, update, delete operations
-router.post('/city', isAuth, isAdmin, [
+router.post('/cities', isAuth, isAdmin, [
     body('postalCode')
         .not().isEmpty().withMessage("Poštanski broj ne smije biti prazan!")
         .isLength( { min: 5 } ).withMessage('Poštanski broj ne može biti kraći od 5 znakova!')
@@ -106,30 +99,16 @@ router.post('/city', isAuth, isAdmin, [
         })
 ], cityController.postAddCity);
 
-router.post('/city/:id', isAuth, isAdmin, [
+router.post('/cities/:id', isAuth, isAdmin, [
     body('postalCode')
         .not().isEmpty().withMessage("Poštanski broj ne smije biti prazan!")
         .isLength( { min: 5 } ).withMessage('Poštanski broj ne može biti kraći od 5 znakova!')
         .isNumeric().withMessage("Neispravan format poštanskog broja!"),
-        // .custom( (value, {req} ) => {
-        //     return City.findOne( { where: { postalCode: value } } ).then( city => {
-        //         if(city){
-        //             return Promise.reject('Grad s ovim poštanskim brojem već postoji!');
-        //         }
-        //     }).catch();
-        // }),
     body('name')
         .not().isEmpty().withMessage("Ime grada ne smije biti prazno!"),
-        // .custom( (value, {req} ) => {
-        //     return City.findOne( { where: { name: value } } ).then( city => {
-        //         if(city){
-        //             return Promise.reject('Grad s ovim imenom već postoji!');
-        //         }
-        //     }).catch();
-        // }),
 ], cityController.postEditCity);
 
-router.delete('/city', isAuth, isAdmin, [
+router.delete('/cities', isAuth, isAdmin, [
     body('id')
         .custom( (value, {req} ) => {
             return User.findOne( { where: { cityId: value } } ).then( user => {
@@ -141,8 +120,7 @@ router.delete('/city', isAuth, isAdmin, [
 ], cityController.deleteCity);
 
 // degree create, update and delete operations
-
-router.post('/degree', isAuth, isAdmin, [
+router.post('/degrees', isAuth, isAdmin, [
     body('name')
         .not().isEmpty().withMessage("Naziv titule ne smije biti prazan!")
         .isLength( { min: 5 } ).withMessage('Naziv titule ne može biti kraći od 5 znakova!')
@@ -164,7 +142,7 @@ router.post('/degree', isAuth, isAdmin, [
     }),
 ], degreeController.postAddDegree);
 
-router.post('/degree/:id', isAuth, isAdmin, [
+router.post('/degrees/:id', isAuth, isAdmin, [
     body('name')
         .not().isEmpty().withMessage("Naziv titule ne smije biti prazan!")
         .isLength( { min: 5 } ).withMessage('Naziv titule ne može biti kraći od 5 znakova!'),
@@ -172,7 +150,7 @@ router.post('/degree/:id', isAuth, isAdmin, [
     .not().isEmpty().withMessage("Kratica titule ne smije biti prazna!"),
 ], degreeController.postEditDegree);
 
-router.delete('/degree', isAuth, isAdmin, [
+router.delete('/degrees', isAuth, isAdmin, [
     body('id')
         .custom( (value, {req} ) => {
             return Instructor.findOne( { where: { degreeId: value } } ).then( instructor => {
@@ -184,7 +162,7 @@ router.delete('/degree', isAuth, isAdmin, [
 ], degreeController.deleteDegree);
 
 // faculty create, update, delete operations
-router.post('/faculty', isAuth, isAdmin, [
+router.post('/faculties', isAuth, isAdmin, [
     body('name')
     .custom( (value, {req} ) => {
         return Faculty.findOne({name: value}).then( faculty => {
@@ -195,7 +173,7 @@ router.post('/faculty', isAuth, isAdmin, [
     })
 ], facultyController.postAddFaculty);
 
-router.post('/faculty/:id', isAuth, isAdmin, [
+router.post('/faculties/:id', isAuth, isAdmin, [
     body('name')
     .custom( (value, {req} ) => {
         return Faculty.findOne({name: value}).then( faculty => {
@@ -206,7 +184,7 @@ router.post('/faculty/:id', isAuth, isAdmin, [
     })
 ], facultyController.postEditFaculty);
 
-router.delete('/faculty', isAuth, isAdmin, [
+router.delete('/faculties', isAuth, isAdmin, [
     body('id')
     .custom( (value, {req} ) => {
         return User.findOne({where: {facultyId: value} }).then( user => {
@@ -218,7 +196,7 @@ router.delete('/faculty', isAuth, isAdmin, [
 ], facultyController.deleteFaculty);
 
 // course create, update, delete operations
-router.post('/course', isAuth, isAdmin, [
+router.post('/courses', isAuth, isAdmin, [
     body('name')
     .custom( (value, {req} ) => {
         return Course.findOne({name: value}).then( course => {
@@ -229,11 +207,9 @@ router.post('/course', isAuth, isAdmin, [
     })
 ], courseController.postAddCourse);
 
-router.post('/course/:id', isAuth, isAdmin, courseController.postEditCourse);
+// TODO: continue validation!
+router.post('/courses/:id', isAuth, isAdmin, courseController.postEditCourse);
 
-router.delete('/course', isAuth, isAdmin, courseController.deleteCourse);
-
-
-
+router.delete('/courses', isAuth, isAdmin, courseController.deleteCourse);
 
 module.exports = router;

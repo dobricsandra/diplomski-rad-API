@@ -12,13 +12,12 @@ const userController = require('../controllers/user');
 const instructorController = require('../controllers/instructor');
 const reviewController = require('../controllers/review');
 const termController = require('../controllers/term');
-
 const reservationController = require('../controllers/reservation');
 
 
 const router = express.Router();
 
-router.post('/user/:id', isAuth, [
+router.post('/users/:id', isAuth, [
     body('email')
         .isEmail().withMessage('Unesite ispravan mail!')
         .isLength( { min: 5 } ).withMessage('E-mail adresa je prekratka!'),
@@ -39,9 +38,9 @@ router.post('/user/:id', isAuth, [
 
 ], userController.postEditUser);
 
-router.delete('/user/', isAuth, userController.deleteUser);
+router.delete('/users/', isAuth, userController.deleteUser);
 
-router.post('/instructor', isAuth, [
+router.post('/instructors', isAuth, [
     body('address')
         .not().isEmpty().withMessage('Adresa ne može biti prazna!')
         .isLength( { min: 5 } ).withMessage('Adresa je prekratka!'),
@@ -59,7 +58,7 @@ router.post('/instructor', isAuth, [
         })
 ], instructorController.postAddInstructor);
 
-router.post('/instructor/:id', isAuth, [
+router.post('/instructors/:id', isAuth, [
     body('address')
         .not().isEmpty().withMessage('Adresa ne može biti prazna!')
         .isLength( { min: 5 } ).withMessage('Adresa je prekratka!'),
@@ -80,18 +79,22 @@ router.post('/instructor/:id', isAuth, [
 
 router.get('/userDetails/:id', userController.getUserByIdDetails);
 
-router.delete('/instructor', isAuth, instructorController.deleteInstructor);
+router.delete('/instructors', isAuth, instructorController.deleteInstructor);
 
-router.post('/reservation', isAuth, reservationController.postAddReservation);
+router.post('/reservations', isAuth, reservationController.postAddReservation);
 router.post('/reserveTerm/:id', isAuth, reservationController.postReserveTerm);
+router.post('/cancelReservationByInstructor/:id', isAuth, reservationController.cancelReservationByInstructor);
 router.get('/reservations', isAuth, reservationController.getReservationsForCurrentUser);
+router.get('/reservationDetails/:id', reservationController.getReservationDetails);
+router.get('/termReservationId/:startTime', reservationController.getReservationIdForTerm);
 router.get('/term/:id', isAuth, termController.getAllTermsForInstructor);
+router.get('/isTermReserved/:id', isAuth, termController.getIsTermReserved);
 router.post('/term', isAuth, termController.setNewTerm);
 router.delete('/term', isAuth, termController.deleteExistingTerm);
 
-router.get('/review/:id', reviewController.getAllReviewsForInstructor);
+router.get('/reviews/:id', reviewController.getAllReviewsForInstructor);
 router.get('/isUserInstructor', isAuth, userController.getUserInstructorId);
 router.post('/changePrice', isAuth, instructorController.changePrice);
-router.post('/deleteCourse', isAuth, instructorController.deleteCourse);
+router.post('/deleteCourse', isAuth, instructorController.deleteCourse); // TODO: why is this post, not delete?
 
 module.exports = router;

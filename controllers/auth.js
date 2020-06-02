@@ -20,7 +20,7 @@ exports.signup = (req, res, next) => {
     const name = req.body.name;
     const surname = req.body.surname;
     const phoneNumber =  req.body.phoneNumber;
-    const picture =  req.body.picture;
+    const picture =  "https://cdn4.iconfinder.com/data/icons/avatars-circle-2/72/146-512.png";
     const facultyId = req.body.facultyId;
     const cityId = req.body.cityId;
 

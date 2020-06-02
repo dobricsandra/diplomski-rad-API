@@ -19,6 +19,10 @@ const Reservation = sequelize.define('reservation', {
   isCancelledByInstructor: {
     type: Sequelize.INTEGER
   },
+  cancelledTerm: {
+    type: Sequelize.STRING(10),
+    allowNull: true
+  }
 },
 {
   underscored: true, // Convert camelCase to camel_case

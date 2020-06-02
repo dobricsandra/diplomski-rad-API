@@ -1,5 +1,4 @@
 const express = require('express');
-//const { body, param } = require('express-validator/check');
 
 const isAuth = require('../middleware/is-auth');
 
@@ -14,52 +13,50 @@ const reviewController = require('../controllers/review');
 
 const router = express.Router();
 
-router.get('/country', countryController.getAllCountries);
-router.get('/country/:id', countryController.getCountryById);
-router.get('/country/:id/cities', countryController.getAllCitiesInCountry);
+// countries read operations
+router.get('/countries', countryController.getAllCountries);
+router.get('/countries/:id', countryController.getCountryById);
+router.get('/countries/:id/cities', countryController.getAllCitiesInCountry);
 
-router.get('/city', cityController.getAllCities);
-router.get('/city/:id', cityController.getCityById);
-router.get('/city/:id/faculties', cityController.getAllFacultiesInCity);
-router.get('/city/:id/users', cityController.getAllUsersInCity);
+// cities read operations
+router.get('/cities', cityController.getAllCities);
+router.get('/cities/:id', cityController.getCityById);
+router.get('/cities/:id/faculties', cityController.getAllFacultiesInCity);
+router.get('/cities/:id/users', cityController.getAllUsersInCity);
 
-router.get('/degree', degreeController.getAllDegrees);
-router.get('/degree/:id', degreeController.getDegreeById);
+// degrees read operations
+router.get('/degrees', degreeController.getAllDegrees);
+router.get('/degrees/:id', degreeController.getDegreeById);
 
-router.get('/user', userController.getAllUsers);
-router.get('/user/:id', userController.getUserById);
+// users read operations
+router.get('/users', userController.getAllUsers);
+router.get('/users/:id', userController.getUserById);
 
+// TODO: wtf? what was this? why? is it used anywhere?
 router.post('/ej', isAuth, courseController.addCoursesToInstructor);
 
-router.get('/faculty', facultyController.getAllFaculties);
-router.get('/faculty/:id', facultyController.getFacultyById);
-router.get('/coursesOnFaculty/:id', facultyController.getAllCoursesOnFaculty);
+// faculties read operations
+router.get('/faculties', facultyController.getAllFaculties);
+router.get('/faculties/:id', facultyController.getFacultyById);
+router.get('/faculties/:id/courses', facultyController.getAllCoursesOnFaculty);
 //router.get('/usersOnFaculty/:id', facultyController.getAllUsersOnFaculty);
 
+// courses read operations
+router.get('/courses', courseController.getAllCourses);
+router.get('/courses/:id', courseController.getCourseById);
+router.get('/courses/:id/instructors', courseController.getAllInstructorsForCourse);
+router.get('/instructors/courses', isAuth, courseController.getAllCoursesForInstructor);
 
+// instructors read operations
+router.get('/instructors', instructorController.getAllInstructors);
+router.get('/instructors/:id', instructorController.getInstructorById);
 
-
-router.get('/course', courseController.getAllCourses);
-router.get('/course/:id', courseController.getCourseById);
-router.get('/instructorsForCourse/:id', courseController.getAllInstructorsForCourse);
-
-
-
-
-
-
-router.get('/instructor', instructorController.getAllInstructors);
-router.get('/instructor/:id', instructorController.getInstructorById);
-
-
-
-
-
-router.post('/review/:id', isAuth, reviewController.postAddReview);
+// reviews CRUD operations - why here? why not in user?
+router.post('/reviews/:id', isAuth, reviewController.postAddReview);
 router.get('/reviews/:id', reviewController.getAllReviewsForInstructor);
-router.get('/getReviewFromUser/:id', reviewController.getReviewFromUserToInstructor);
-router.post('/review/:id', isAuth, reviewController.postEditReview);
-router.delete('/review', isAuth, reviewController.deleteReview);
+router.get('/getReviewFromUser/:id', isAuth, reviewController.getReviewFromUserToInstructor);
+router.post('/editreview/:id', isAuth, reviewController.postEditReview);
+router.delete('/reviews', isAuth, reviewController.deleteReview);
 
 //router.get('/instructors', pageController.postAddInstructor);
 //router.get('/instructors/:id', pageController.getInstructorById);

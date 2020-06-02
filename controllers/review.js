@@ -20,15 +20,15 @@ exports.getAllReviewsForInstructor = (req, res, next) => {
 
 exports.getReviewFromUserToInstructor = (req, res, next) => { 
     const id = req.params.id;
-    const userId = req.body.userId;
-    Review.findAll( {where: { 'instructor_id' : id, 'user_id' : userId }}).then(result => {
-      if(result == null){
+    const userId = req.userId;
+    Review.findOne( {where: { instructorId: id, userId : userId }}).then(result => {
+      if(!result || Object.keys(result).length == 0){
         console.log("Ne postoji ocjena ovog korisnika za tog instruktora");
-        res.status(404).json("Ne postoji ocjena ovog korisnika za instruktora s tim ID-jem");
+        res.status(200).json({status:0, mark:null});
         return;
       }
       console.log(`Evo ocjene ovog korisnika za instruktora s tim ID-jem`);
-      res.status(200).json(result);
+      res.status(200).json({status:1, mark:result.reviewMark});
     })
     .catch(err => {
       res.status(500).json("Nešto je pošlo po zlu!");
@@ -38,12 +38,12 @@ exports.getReviewFromUserToInstructor = (req, res, next) => {
 
 exports.postAddReview = (req, res, next) => { 
   const id = req.params.id;
-  const userId = req.body.userId;
-  const mark = req.body.mark;
+  const userId = req.userId;
+  const reviewMark = req.body.mark;
   Review.create({
     instructorId: id,
     userId: userId,
-    mark: mark
+    reviewMark: reviewMark
    })
   .then(result => {
     res.status(201).json("Dodan novu ocjenu!");
@@ -56,20 +56,20 @@ exports.postAddReview = (req, res, next) => {
 };
 
 exports.postEditReview = (req, res, next) => {
-  const id = req.params.id;
+  const instructorId = req.params.id;
+  const userId = req.userId;
   const updatedMark = req.body.mark;
-  Review.findByPk(id)
+  Review.findOne({where: {instructorId: instructorId, userId: userId}})
     .then(result => {
-      if(Object.keys(result).length == 0) {
+      if(!result) {
         res.status(404).json("Ne postoji ocjena ovog korisnika za instruktora s odabranim ID-jem");
         return;
       }
-      mark = updatedMark;
-      abbreviation = updatedAbbreviation;
+      result.reviewMark = updatedMark;
       return result.save();
     })
     .then(result => {
-      console.log("Ocjena ovog instruktora je ažurirana!");
+      console.log("Ocjena ovog korisnika za ovog instruktora je ažurirana!");
       res.status(200).json(result);
     })
     .catch(err => {

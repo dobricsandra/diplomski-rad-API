@@ -35,18 +35,19 @@ app.use((req, res, next) => {
     next();
 });
 
+// error handling middleware, currently only for 500
 app.use((error, req, res, next) => {
     console.log(error);
     res.status(error.httpStatusCode).json(error.message);
 });
 
-// pageRoutes are actions for user, authRoutes for signup and login, and adminRoutes for admin actions
-app.use(pageRoutes);
-app.use(authRoutes);
-app.use(userRoutes);
-app.use('/admin', adminRoutes);
+app.use(pageRoutes); // basic read operations on data catalogues
+app.use(authRoutes); // signup and login
+app.use(userRoutes); // user actions in application
+app.use('/admin', adminRoutes); // admin actions
 
-//TODO: should this be here?
+//TODO: should associating be here or removed somewhere else, maybe in models?
+
 // set foreign key country_id in table city
 City.belongsTo(Country, { foreignKey: { allowNull: false } } );
 Country.hasMany(City); // This is redundant, but let it be
@@ -79,6 +80,7 @@ Degree.hasMany(Instructor);
 User.hasOne(Reservation, { foreignKey: { allowNull: false } });
 Course.hasOne(Reservation, { foreignKey: { allowNull: false } });
 Reservation.belongsTo(Course);
+Reservation.belongsTo(User);
 
 // set foreign key instructor_id in table term
 Term.belongsTo(Instructor, { foreignKey: { allowNull: false } });
@@ -93,6 +95,7 @@ User.hasMany(Review);
 
 Review.belongsTo(Instructor, { foreignKey: { allowNull: false } });
 Instructor.hasMany(Review);
+
 
 // set m:n association between tables instructor and course
 Instructor.belongsToMany(Course, { through: InstructorCourse });

@@ -100,8 +100,6 @@ exports.getReservationsForCurrentUser = (req, res, next) => {
 }
 
 
-
-
 exports.postReserveTerm = (req, res, next) => {
     const instructorId = req.params.id;
     const startTime = req.body.startTime;
@@ -119,6 +117,86 @@ exports.postReserveTerm = (req, res, next) => {
         .then(result => {
             console.log("Reervacija pridruena terminu!");
             res.status(200).json(result);
+        })
+        .catch(err => {
+            const error = new Error(err);
+            error.status = 500;
+            console.log(error);
+            return next(error);
+        })
+}
+
+exports.cancelReservationByInstructor = (req, res, next) => {
+    const reservationId = req.params.id;
+    const instructorId = req.body.instructorId;
+    const term = req.body.term;
+    console.log(term);
+
+    Reservation.findOne({ where: { id: reservationId} })
+        .then(result => {
+            if (Object.keys(result).length == 0) {
+                res.status(404).json("Ne postoji trazeni termin!");
+                return;
+            }
+            result.isCancelledByInstructor = instructorId;
+            result.cancelledTerm = term;
+            return result.save();
+        })
+        .then(result => {
+            return Term.findOne( {where: {reservationId: reservationId}})
+        })
+        .then(result => {
+            return result.destroy();
+        })
+        .then(result => { 
+            console.log("Reervaciju otkazao instruktor!");
+            res.status(200).json(result);}
+        )
+        .catch(err => {
+            const error = new Error(err);
+            error.status = 500;
+            console.log(error);
+            return next(error);
+        })
+}
+
+exports.getReservationIdForTerm = (req, res, next) => {
+    const startTime = req.params.startTime;
+
+    Term.findOne({where: {startTime: startTime}})
+        .then(result => {
+            if (Object.keys(result).length == 0) {
+                res.status(404).json("Ne postoji rezervacija!");
+                return;
+            }
+            console.log("Podaci o terminu");
+            res.status(200).json(result);
+        })
+        .then(result => {
+            
+        })
+        .catch(err => {
+            const error = new Error(err);
+            error.status = 500;
+            console.log(error);
+            return next(error);
+        })
+}
+
+exports.getReservationDetails = (req, res, next) => {
+    const reservationId = req.params.id;
+
+    Reservation.findOne({where: {id: reservationId}, include: [{model: User}, {model: Course, include: [{model:Faculty}]}]})
+        .then(result => {
+            if (Object.keys(result).length == 0) {
+                res.status(404).json("Ne postoji rezervacija!");
+                return;
+            }
+            console.log("Detalji o rezervaciji!");
+            res.status(200).json(result);
+        })
+        .then(result => {
+            
         })
         .catch(err => {
             const error = new Error(err);

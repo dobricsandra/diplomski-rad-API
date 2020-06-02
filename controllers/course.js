@@ -89,6 +89,29 @@ exports.getAllInstructorsForCourse = (req, res, next) => {
 };
 
 
+exports.getAllCoursesForInstructor = (req, res, next) => {
+  userId = req.userId;
+  Instructor.findOne({
+    where: {
+      userId: userId
+    },
+    include: [{
+      model: Course, include: [
+        {model:Faculty}
+      ]
+    }]
+  }).then(result => {
+    if(Object.keys(result).length == 0) {
+      res.status(404).json("Ne postoji nijedan predmet za instruktora s odabranim ID-jem");
+      return;
+    }
+    res.status(200).json(result);
+    console.log("Popis predmeta za navedenog instruktora:")
+  }).catch(err => {
+    res.status(500).json("Nešto je pošlo po zlu!");
+    console.log(err);
+  })
+};
 // this should be available only for admin 
 
 exports.postAddCourse = (req, res, next) => { 

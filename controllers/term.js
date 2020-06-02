@@ -18,6 +18,29 @@ exports.getAllTermsForInstructor = (req, res, next) => {
     });
 };
 
+exports.getIsTermReserved = (req, res, next) => { 
+    const startTime = req.params.id;
+    Term.findOne({where: {startTime: startTime}}).then(result => {
+      if(Object.keys(result) == 0){
+        console.log("Ne postoji trazeni termin");
+        res.status(404).json("Ne postoji trazeni termin");
+        return;
+      }
+      if(result.reservationId == null){
+          console.log("termin je slobodan");
+          return res.status(200).json({isReserved: false});
+      }
+      if(result.reservationId != null) {
+          console.log("termin je rezerviran");
+          return res.status(200).json({isReserved: true});
+      }
+    })
+    .catch(err => {
+      res.status(500).json("Nešto je pošlo po zlu!");
+      console.log(err);
+    });
+};
+
 exports.setNewTerm = (req, res, next) => { 
     const instructorId = parseInt(req.body.instructorId);
     const startTime = req.body.startTime;

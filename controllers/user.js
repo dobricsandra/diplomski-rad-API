@@ -183,8 +183,10 @@ exports.getUserInstructorId = (req, res, next) => {
       Instructor.findOne({where: {userId: userId}})
         .then(result => {
           console.log(result);
-          if(!result) {
-            res.status(404).json({instructorId: null})
+          if(!result || Object.keys(result).length == 0) {
+            console.log("ovdje si usao");
+            res.status(404).json({instructorId: null});
+            return;
           }
           res.status(200).json({instructorId: result.id});
         })
