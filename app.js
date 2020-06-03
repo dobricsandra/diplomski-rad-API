@@ -88,6 +88,7 @@ Instructor.hasMany(Term);
 
 // set foreign key reservation_id in table term
 Reservation.hasOne(Term);
+Term.belongsTo(Reservation);
 
 // set foreign key user_id and instructor_id in table review
 Review.belongsTo(User, { foreignKey: { allowNull: false } });

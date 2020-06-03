@@ -87,7 +87,7 @@ router.post('/cancelReservationByInstructor/:id', isAuth, reservationController.
 router.get('/reservations', isAuth, reservationController.getReservationsForCurrentUser);
 router.get('/reservationDetails/:id', reservationController.getReservationDetails);
 router.get('/termReservationId/:startTime', reservationController.getReservationIdForTerm);
-router.get('/term/:id', isAuth, termController.getAllTermsForInstructor);
+router.get('/term', isAuth,  termController.getAllTermsForInstructor);
 router.get('/isTermReserved/:id', isAuth, termController.getIsTermReserved);
 router.post('/term', isAuth, termController.setNewTerm);
 router.delete('/term', isAuth, termController.deleteExistingTerm);

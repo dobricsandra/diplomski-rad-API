@@ -1,9 +1,28 @@
 const Term = require('../models/term');
 const User = require('../models/user');
+const Reservation = require('../models/reservation');
+const Course = require('../models/course');
+const Instructor = require('../models/instructor');
 
 exports.getAllTermsForInstructor = (req, res, next) => { 
-    const id = req.params.id;
-    Term.findAll( {where: { instructorId : id }}).then(result => {
+    const userId = req.userId;
+    console.log(userId);
+    Instructor.findOne({where: {userId: userId}})
+    .then(result => {
+        if(Object.keys(result) == 0 || !result){
+            console.log("Korisnik nije instruktor");
+            res.status(404).json("Korisnik nije instruktor");
+            return;
+        }
+        return result;
+    })
+    .then(result => {
+    return Term.findAll({
+        where: { instructorId : result.id },
+        include: [ {model: Reservation, include: [ {model: User}, {model: Course}]}]
+    })
+    })
+    .then(result => {
       if(Object.keys(result) == 0){
         console.log("Ne postoji nijedan termin za instruktora");
         res.status(404).json("Ne postoji termin za instruktora s tim ID-jem");
