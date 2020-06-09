@@ -43,7 +43,7 @@ router.delete('/users/', isAuth, userController.deleteUser);
 router.post('/instructors', isAuth, [
     body('address')
         .not().isEmpty().withMessage('Adresa ne može biti prazna!')
-        .isLength( { min: 5 } ).withMessage('Adresa je prekratka!'),
+        .isLength( { min: 3 } ).withMessage('Adresa je prekratka!'),
     body('description')
         .isLength( { max: 255 } ).withMessage('Opis je predug! Ograničite se na 255 znakova!'),
     body('degreeId')
@@ -87,8 +87,9 @@ router.post('/cancelReservationByInstructor/:id', isAuth, reservationController.
 router.get('/reservations', isAuth, reservationController.getReservationsForCurrentUser);
 router.get('/reservationDetails/:id', reservationController.getReservationDetails);
 router.get('/termReservationId/:startTime', reservationController.getReservationIdForTerm);
+router.get('/term/:id',  termController.getAllTerms);
 router.get('/term', isAuth,  termController.getAllTermsForInstructor);
-router.get('/isTermReserved/:id', isAuth, termController.getIsTermReserved);
+router.get('/isTermReserved/:id', termController.getIsTermReserved);
 router.post('/term', isAuth, termController.setNewTerm);
 router.delete('/term', isAuth, termController.deleteExistingTerm);
 

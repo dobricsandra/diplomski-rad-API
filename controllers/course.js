@@ -5,7 +5,7 @@ const Faculty = require('../models/faculty');
 const InstructorCourse = require('../models/instructor_course');
 
 exports.getAllCourses = (req, res, next) => { 
-    Course.findAll().then(result => {
+    Course.findAll({ include: [{model: Faculty}]}).then(result => {
       if(Object.keys(result).length == 0){
         res.status(204).json("Ne postoji nijedan predmet!");
         console.log("Ne postoji nijedan predmet.");
@@ -40,6 +40,7 @@ exports.addCoursesToInstructor = (req, res, next) => {
     const userId = req.userId;
     console.log("iz addcourse" +req.userId);
     const courseId = req.body.courseId;
+    const price = req.body.price;
     let instructor;
     Instructor.findOne({  
       where: {
@@ -51,7 +52,7 @@ exports.addCoursesToInstructor = (req, res, next) => {
       instructor=result;
       Course.findByPk(courseId).then(course => {
           console.log(course);
-          instructor.addCourse(course,{ through: {price:0}}).then(result =>  {
+          instructor.addCourse(course,{ through: {price:price}}).then(result =>  {
               console.log("Dodan course instruktoru!");
               res.status(200).json(result);
             })
@@ -102,7 +103,7 @@ exports.getAllCoursesForInstructor = (req, res, next) => {
     }]
   }).then(result => {
     if(Object.keys(result).length == 0) {
-      res.status(404).json("Ne postoji nijedan predmet za instruktora s odabranim ID-jem");
+      res.status(204).json("Ne postoji nijedan predmet za instruktora s odabranim ID-jem");
       return;
     }
     res.status(200).json(result);
@@ -124,7 +125,7 @@ exports.postAddCourse = (req, res, next) => {
     facultyId: facultyId
    })
   .then(result => {
-    res.status(201).json("Dodan novi predmet!");
+    res.status(201).json(result);
     console.log(`Novi predmet uspješno dodan!`);
   })
   .catch(err => {

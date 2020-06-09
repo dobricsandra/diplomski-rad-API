@@ -9,6 +9,7 @@ const City = require('../models/city');
 const Review = require('../models/review');
 const Term = require('../models/term');
 const InstructorCourse = require('../models/instructor_course');
+const Reservation = require('../models/reservation');
 
 exports.getAllInstructors = (req, res, next) => { 
     Instructor.findAll({ 
@@ -19,6 +20,44 @@ exports.getAllInstructors = (req, res, next) => {
         { 
           model: Course,  
         } 
+      ]})
+      .then(result => {
+        if(Object.keys(result).length == 0){
+          res.status(204).json("Ne postoji nijedan instruktor!");
+          console.log("Ne postoji nijedan instruktor.");
+        }
+        res.status(200).json(result);
+        console.log("Uspješno prikupljen popis instruktora!");
+      })
+      .catch(err => {
+        const error = new Error(err);
+        error.statusCode = 500;
+        console.log(error);
+        return next(error);
+      });
+};
+
+exports.getInstructorsForCourseInCity = (req, res, next) => { 
+  const userId = req.userId;
+  const cityId = req.body.cityId;
+  const courseId = req.body.courseId;
+    Instructor.findAll({ 
+      include: [ 
+        { 
+          model: User,  
+          where: {
+            cityId: cityId
+          }, include: [{model:City}],
+        }, 
+        { 
+          model: Course,  
+          where: {
+            id: courseId
+          }
+        },
+        { model:Review 
+        }
+        
       ]})
       .then(result => {
         if(Object.keys(result).length == 0){
@@ -60,7 +99,7 @@ exports.getInstructorById = (req, res, next) => {
         {
           model: Review
         },
-        {model: Term}
+        {model: Term, include: {model: Reservation}}
       ]
       })
       .then(result => {
@@ -227,11 +266,21 @@ exports.deleteInstructor = (req, res, next) => {
 };
 
 exports.changePrice = (req, res, next) => {
-  const instructorId = req.body.instructorId;
+  const userId = req.body.userId;
   const courseId = req.body.courseId;
   const updatedPrice = req.body.price;
 
-  InstructorCourse.findOne({where: {instructorId: instructorId, courseId: courseId}})
+  Instructor.findOne({where: {userId: userId}})
+  .then(result => {
+    if(Object.keys(result).length == 0 || !result) {
+      res.status(404).json("Ne postoji instruktor s odabranim ID-jem");
+      return;
+    }
+    return result;
+  })
+  .then(result => {
+   return InstructorCourse.findOne({where: {instructorId: result.id, courseId: courseId}})
+  })
   .then(result => {
     result.price = updatedPrice;
     return result.save();
@@ -248,10 +297,20 @@ exports.changePrice = (req, res, next) => {
 };
 
 exports.deleteCourse = (req, res, next) => {
-  const instructorId = req.body.instructorId;
+  const userId = req.userId;
   const courseId = req.body.courseId;
 
-  InstructorCourse.findOne({where: {instructorId: instructorId, courseId: courseId}})
+  Instructor.findOne({where: {userId: userId}})
+  .then( result => {
+    if(Object.keys(result).length == 0 || !result) {
+      res.status(404).json("Ne postoji instruktor za korisnika s ovim ID-jem");
+      return;
+    }
+    return result;
+  })
+  .then( result => {
+    return InstructorCourse.findOne({where: {instructorId: result.id, courseId: courseId}})
+  })
   .then(result => {
     return result.destroy();
   })

@@ -7,7 +7,7 @@ const User = require('../models/user');
 const Instructor = require('../models/instructor');
 
 exports.getAllCities = (req, res, next) => { 
-    City.findAll()
+    City.findAll({ include: [{model:Country}]})
     .then(result => {
       if(Object.keys(result).length == 0){
         res.status(204).json("Ne postoji nijedan grad!");
@@ -55,7 +55,7 @@ exports.getAllFacultiesInCity = (req, res, next) => {
   })
   .then(result => {
     if(Object.keys(result).length == 0) {
-      res.status(404).json("Ne postoji grad s odabranim ID-jem");
+      res.status(204).json("Ne postoji grad s odabranim ID-jem");
       return;
     }
     res.status(200).json(result);
@@ -142,6 +142,8 @@ exports.postEditCity = (req, res, next) => {
   const updatedName = req.body.name;
   const updatedAbbreviation = req.body.abbreviation;
   const updatedCountryId =  req.body.countryId;
+  console.log(req.body.countryId + "" + req.body.abbreviation + "" + req.body.name)
+
   City.findByPk(id)
     .then(result => {
       if(Object.keys(result).length == 0) {

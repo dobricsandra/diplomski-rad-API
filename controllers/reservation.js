@@ -45,6 +45,9 @@ exports.postAddReservation = (req, res, next) => {
     const userId = req.userId;
     const comment = req.body.comment;
     const courseId = req.body.courseId;
+    console.log("sad slijedi popis svega");
+    console.log(req.body.comment);
+    console.log(req.body.courseId);
     Reservation.create({
         userId: userId,
         comment: comment,

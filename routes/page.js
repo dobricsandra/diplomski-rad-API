@@ -33,7 +33,7 @@ router.get('/users', userController.getAllUsers);
 router.get('/users/:id', userController.getUserById);
 
 // TODO: wtf? what was this? why? is it used anywhere?
-router.post('/ej', isAuth, courseController.addCoursesToInstructor);
+router.post('/instructors/courses', isAuth, courseController.addCoursesToInstructor);
 
 // faculties read operations
 router.get('/faculties', facultyController.getAllFaculties);
@@ -50,6 +50,10 @@ router.get('/instructors/courses', isAuth, courseController.getAllCoursesForInst
 // instructors read operations
 router.get('/instructors', instructorController.getAllInstructors);
 router.get('/instructors/:id', instructorController.getInstructorById);
+
+// get instructor by city and course criteria
+
+router.post('/searchInstructors', instructorController.getInstructorsForCourseInCity);
 
 // reviews CRUD operations - why here? why not in user?
 router.post('/reviews/:id', isAuth, reviewController.postAddReview);

@@ -25,7 +25,29 @@ exports.getAllTermsForInstructor = (req, res, next) => {
     .then(result => {
       if(Object.keys(result) == 0){
         console.log("Ne postoji nijedan termin za instruktora");
-        res.status(404).json("Ne postoji termin za instruktora s tim ID-jem");
+        res.status(204).json("Ne postoji termin za instruktora s tim ID-jem");
+        return;
+      }
+      console.log(`Evo termini za instruktora s tim ID-jem`);
+      res.status(200).json(result);
+    })
+    .catch(err => {
+      res.status(500).json("Nešto je pošlo po zlu!");
+      console.log(err);
+    });
+};
+
+exports.getAllTerms = (req, res, next) => { 
+    const instructorId = req.params.id;
+    console.log(instructorId);
+  Term.findAll({
+        where: { instructorId : instructorId },
+        include: [ {model: Reservation}]
+    })
+    .then(result => {
+      if(Object.keys(result) == 0){
+        console.log("Ne postoji nijedan termin za instruktora");
+        res.status(204).json("Ne postoji termin za instruktora s tim ID-jem");
         return;
       }
       console.log(`Evo termini za instruktora s tim ID-jem`);
@@ -39,19 +61,21 @@ exports.getAllTermsForInstructor = (req, res, next) => {
 
 exports.getIsTermReserved = (req, res, next) => { 
     const startTime = req.params.id;
-    Term.findOne({where: {startTime: startTime}}).then(result => {
-      if(Object.keys(result) == 0){
+    Term.findOne({where: {startTime: startTime}, include : [{model: Reservation}]}).then(result => {
+      if(Object.keys(result).length == 0 || !result){
         console.log("Ne postoji trazeni termin");
         res.status(404).json("Ne postoji trazeni termin");
         return;
       }
       if(result.reservationId == null){
+          console.log(result);
           console.log("termin je slobodan");
           return res.status(200).json({isReserved: false});
       }
       if(result.reservationId != null) {
+        console.log(result);
           console.log("termin je rezerviran");
-          return res.status(200).json({isReserved: true});
+          return res.status(200).json({isReserved: true, userId: result.reservation.userId });
       }
     })
     .catch(err => {

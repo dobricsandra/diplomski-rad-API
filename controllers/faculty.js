@@ -6,7 +6,7 @@ const Course = require('../models/course');
 
 
 exports.getAllFaculties = (req, res, next) => { 
-    Faculty.findAll().then(result => {
+    Faculty.findAll({include: [{model:City}]}).then(result => {
       if(Object.keys(result).length == 0){
         res.status(204).json("Ne postoji nijedan fakultet!");
         console.log("Ne postoji nijedan fakultet.");
