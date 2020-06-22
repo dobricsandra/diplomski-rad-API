@@ -1,3 +1,6 @@
+const nodemailer = require('nodemailer');
+const sendgridTransport = require('nodemailer-sendgrid-transport');
+
 const Reservation = require('../models/reservation');
 const Term = require('../models/term');
 const User = require('../models/user');
@@ -6,6 +9,11 @@ const Course = require('../models/course');
 const InstructorCourse = require('../models/instructor_course');
 const Faculty = require('../models/faculty');
 
+const transporter = nodemailer.createTransport(sendgridTransport({
+    auth: {
+        api_key: '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'
+    }
+}))
 // exports.getAllReviewsForInstructor = (req, res, next) => { 
 //     const id = req.params.id;
 //     Review.findAll( {where: { 'instructor_id' : id }}).then(result => {
@@ -107,8 +115,13 @@ exports.postReserveTerm = (req, res, next) => {
     const instructorId = req.params.id;
     const startTime = req.body.startTime;
     const reservationId = req.body.reservationId;
+    let term;
 
-    Term.findOne({ where: { startTime: startTime, instructorId: instructorId } })
+    Term.findOne({ where: { startTime: startTime, instructorId: instructorId }, 
+                   include: [
+                       {model: Instructor, include: [{model:User}]}, 
+                       {model: Reservation, include: [ {model:User}, {model:Course, include: [{model:Faculty}]} ] }
+                    ]})
         .then(result => {
             if (Object.keys(result).length == 0) {
                 res.status(404).json("Ne postoji trazeni termin!");
@@ -118,7 +131,30 @@ exports.postReserveTerm = (req, res, next) => {
             return result.save();
         })
         .then(result => {
-            console.log("Reervacija pridruena terminu!");
+            return Term.findOne({ where: { reservationId: reservationId }, 
+                include: [
+                    {model: Instructor, include: [{model:User}]}, 
+                    {model: Reservation, include: [ {model:User}, {model:Course, include: [{model:Faculty}]} ] }
+                 ]})
+                })
+            .then( result => {
+            if (Object.keys(result).length == 0) {
+                    res.status(404).json("Ne postoji trazeni termin!");
+                    return;
+            }
+            term = result;
+            console.log(term);
+            console.log("Reervacija pridruzena terminu!");
+            transporter.sendMail({
+                to: term.instructor.user.email,
+                from: 'dobric.sanndra@gmail.com',
+                subject: '' + term.instructor.user.name + ', imate novu rezervaciju!',
+                html: '<h1>' + term.instructor.user.name + ', imate novu rezervaciju!</h1>' +
+                      '<p>' + term.reservation.user.name + ' je rezervirala termin za instrukcije iz kolegija ' +
+                      '<b>' + term.reservation.course.name + '</b> za ' + term.reservation.course.faculty.name + 
+                      '<b> ' +  term.startTime.slice(6, 8) + '.' + term.startTime.slice(4, 6) + '.' + term.startTime.slice(0, 4) +
+                      ' u ' + term.startTime.slice(8, 10) + ':00h </b></p>'
+            });
             res.status(200).json(result);
         })
         .catch(err => {
@@ -133,16 +169,26 @@ exports.cancelReservationByInstructor = (req, res, next) => {
     const reservationId = req.params.id;
     const instructorId = req.body.instructorId;
     const term = req.body.term;
+    let reservation;
     console.log(term);
 
-    Reservation.findOne({ where: { id: reservationId} })
+    Reservation.findOne({ where: { id: reservationId}, 
+        include : [
+            {model:User}, 
+            {model:Course, include: [{model: Faculty}]},
+            {model:Term, include: [
+                {model:Instructor, include: [
+                    {model:User}
+                ]}
+            ]}]})
         .then(result => {
             if (Object.keys(result).length == 0) {
-                res.status(404).json("Ne postoji trazeni termin!");
+                res.status(404).json("Ne postoji trazena rezervacija!");
                 return;
             }
             result.isCancelledByInstructor = instructorId;
             result.cancelledTerm = term;
+            reservation = result;
             return result.save();
         })
         .then(result => {
@@ -153,6 +199,16 @@ exports.cancelReservationByInstructor = (req, res, next) => {
         })
         .then(result => { 
             console.log("Reervaciju otkazao instruktor!");
+            transporter.sendMail({
+                to: reservation.user.email,
+                from: 'dobric.sanndra@gmail.com',
+                subject: '' + reservation.user.name + ', vaš termin za instrukcije je otkazan!',
+                html: '<h1>' + reservation.user.name + ', vaš termin za instrukcije je otkazan!</h1>' +
+                      '<p>' + reservation.term.instructor.user.name + ' je otkazao termin iz kolegija ' +
+                      '<b>' + reservation.course.name + '</b> za ' + reservation.course.faculty.name + 
+                      '<b> ' +  reservation.term.startTime.slice(6, 8) + '.' + reservation.term.startTime.slice(4, 6) + '.' + reservation.term.startTime.slice(0, 4) +
+                      ' u ' + reservation.term.startTime.slice(8, 10) + ':00h </b></p>'
+            });
             res.status(200).json(result);}
         )
         .catch(err => {
